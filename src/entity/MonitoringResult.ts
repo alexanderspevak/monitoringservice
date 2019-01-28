@@ -6,16 +6,13 @@ export class MonitoringResult {
     id: number;
 
     @Column()
-    name: string;
-
-    @Column()
     httpCode:number
 
     @CreateDateColumn()
     dateOfCheck:Date
 
-    @Column()
-    payload: string;
+    @Column({type:"longtext"})
+    payload: string;    
 
     @ManyToOne(type=>MonitoredEndPoint, monitoredEndPoint=>monitoredEndPoint.monitoringResult,{nullable:false})
     monitoredEndPoint:MonitoredEndPoint

@@ -1,3 +1,4 @@
 import * as endPointController from './monitoredEndPoint'
-
-export { endPointController }
+import * as monitoringResultController from './monitoringResult'
+import {loginMiddleWare} from './loginMiddleWare'
+export { endPointController,loginMiddleWare, monitoringResultController }

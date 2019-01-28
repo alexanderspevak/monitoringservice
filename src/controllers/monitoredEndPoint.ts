@@ -1,27 +1,8 @@
-import { User, MonitoredEndPoint } from '../entity'
-import { getConnection, getRepository } from 'typeorm'
+import {  MonitoredEndPoint } from '../entity'
+import {  getRepository } from 'typeorm'
 import { validate } from 'class-validator';
 
-export const loginMiddleWare = async (req, res, next) => {
-    const userRepository = getRepository(User)
-    res.header('Content-Type', 'text/html')
-    const body = req.body;
-    const headers = req.headers
-    console.log(headers.accesstoken, body)
-    if (!headers.accesstoken) {
-        res.status(401)
-        return res.send('Login to continue')
-    }
-    const user = await userRepository.findOne({
-        'accessToken': headers.accesstoken
-    })
-    if (!user) {
-        res.status(401)
-        return res.send('Invalid Token, Login to continue')
-    }
-    req.user = user
-    next()
-}
+
 export const createEndPoint = async (req, res, next) => {
     const pointRepository = getRepository(MonitoredEndPoint)
     const userId = req.user.id;

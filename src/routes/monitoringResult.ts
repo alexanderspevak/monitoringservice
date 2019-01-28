@@ -1,6 +1,7 @@
 import {Router}  from 'restify-router';
+import {loginMiddleWare,monitoringResultController} from '../controllers'
 export const  monitoringResultRouter=new Router();
 
-monitoringResultRouter.get('/monitoringResults',(req,res,next)=>{
-    res.send('hello results')
-})
+
+monitoringResultRouter.use(loginMiddleWare)
+monitoringResultRouter.get('/monitoringresults',monitoringResultController.showMonitoringResults)
