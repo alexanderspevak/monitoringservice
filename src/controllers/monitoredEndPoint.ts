@@ -1,6 +1,10 @@
-import {  MonitoredEndPoint } from '../entity'
-import {  getRepository } from 'typeorm'
+import { MonitoredEndPoint } from '../entity'
+import { getRepository } from 'typeorm'
 import { validate } from 'class-validator';
+
+import * as EventEmitter from 'events'
+class EndPointEmitter extends EventEmitter { }
+export const endPointEmitter = new EndPointEmitter()
 
 
 export const createEndPoint = async (req, res, next) => {
@@ -23,8 +27,9 @@ export const createEndPoint = async (req, res, next) => {
         res.status(400)
         return res.send(errors)
     }
-    await pointRepository.save(monitoredEndpoint)
+    pointRepository.save(monitoredEndpoint)
         .then((endPoint) => {
+            endPointEmitter.emit('add',endPoint)
             res.status(200)
             res.send(endPoint)
         })
@@ -42,7 +47,8 @@ export const updateEndpoint = async (req, res, next) => {
     if (!monitoredEndpoint) return res.send('Endpoint non existant')
     req.body.name ? monitoredEndpoint.name = req.body.name : false;
     req.body.url ? monitoredEndpoint.url = req.body.url : false;
-    req.body.monitoredInterval ? monitoredEndpoint.monitoredInterval = req.body.monitoredInterval : false;
+    req.body.monitoredInterval &&typeof(parseInt(req.body.monitoredInterval))==='number'? monitoredEndpoint.monitoredInterval = parseInt(req.body.monitoredInterval) : false;
+    console.log(req.body.monitoredInterval,monitoredEndpoint.monitoredInterval)
     const errors = await validate(monitoredEndpoint)
     if (errors.length > 0) {
         res.status(400)
@@ -50,6 +56,7 @@ export const updateEndpoint = async (req, res, next) => {
     }
     await pointRepository.save(monitoredEndpoint)
         .then((endPoint) => {
+            endPointEmitter.emit('update',endPoint)
             res.header('Content-Type', 'application/json')
             res.status(200)
             res.send(endPoint)
@@ -59,6 +66,7 @@ export const updateEndpoint = async (req, res, next) => {
         })
 }
 export const deleteEndpoint = async (req, res, next) => {
+    console.log('delete')
     const pointRepository = getRepository(MonitoredEndPoint)
     if (!req.query.id) {
         return res.send('id needed to delete')
@@ -66,6 +74,7 @@ export const deleteEndpoint = async (req, res, next) => {
     const id = parseInt(req.query.id)
     await pointRepository.delete(id)
         .then(point => {
+            endPointEmitter.emit('delete', id)
             res.status(200)
             res.send('Affected Rows: ' + point.raw.affectedRows)
         })

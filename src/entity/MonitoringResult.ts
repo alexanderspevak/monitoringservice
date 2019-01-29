@@ -14,6 +14,6 @@ export class MonitoringResult {
     @Column({type:"longtext"})
     payload: string;    
 
-    @ManyToOne(type=>MonitoredEndPoint, monitoredEndPoint=>monitoredEndPoint.monitoringResult,{nullable:false})
+    @ManyToOne(type=>MonitoredEndPoint, monitoredEndPoint=>monitoredEndPoint.monitoringResult,{nullable:false, onDelete:'CASCADE'})
     monitoredEndPoint:MonitoredEndPoint
 }

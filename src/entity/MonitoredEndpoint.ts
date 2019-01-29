@@ -48,7 +48,7 @@ export class MonitoredEndPoint {
     @ManyToOne(type => User, user => user.monitoredEndPoints,{nullable:false})
     user: User
 
-    @OneToMany(type => MonitoringResult, monitoringResult => monitoringResult.monitoredEndPoint)
+    @OneToMany(type => MonitoringResult, monitoringResult => monitoringResult.monitoredEndPoint,{onDelete:'CASCADE'})
     monitoringResult: MonitoringResult[];
 }
 

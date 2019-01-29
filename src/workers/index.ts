@@ -3,8 +3,9 @@ import { getRepository } from 'typeorm'
 import axios from 'axios';
 import * as zlib from 'zlib';
 import * as url from 'url';
+import { endPointEmitter } from '../controllers/monitoredEndPoint'
 
-let intervals = []
+let intervals = {}
 
 export const startWorkers = () => {
     clearIntervalArray()
@@ -12,29 +13,27 @@ export const startWorkers = () => {
     pointRepository.find()
         .then(endPoints => {
             endPoints.forEach(endPoint => {
-                let endPointUrl = endPoint.url
-                let urlObj = url.parse(endPointUrl);
-                urlObj.protocol = urlObj.protocol === 'http' ? 'http' : 'https';
-                urlObj.slashes = true
-                const parsedUrl = url.format(urlObj)
-                const removeExtraSlash = parsedUrl.replace('///', '//')
-                startAxios(removeExtraSlash, endPoint)
+                const parsedUrl:string=parseUrl(endPoint)
+                startAxios(parsedUrl, endPoint)
             })
         })
     setInterval(() => {
         startWorkers()
-    },60* 30 * 1000)
+    }, 60*60 * 1000)
 }
 
 const clearIntervalArray = () => {
-    let intervalInstance
-    while (intervalInstance = intervals.pop()) {
-        clearInterval(intervalInstance)
+    console.log('intervals',intervals)
+    for (var interval in intervals ){
+        if(intervals.hasOwnProperty(interval)){
+            clearInterval(intervals[interval])
+            delete intervals[interval]
+        }
     }
+    console.log('cleaned intervals',intervals)
 }
-
 async function startAxios(url: string, endPoint: MonitoredEndPoint) {
-    intervals.push(setInterval(
+    intervals[endPoint.id]=setInterval(
         () => {
             const pointRepository = getRepository(MonitoredEndPoint)
             const resultRepository = getRepository(MonitoringResult)
@@ -43,10 +42,9 @@ async function startAxios(url: string, endPoint: MonitoredEndPoint) {
                 .then((res) => {
                     let payload: string = res.data ? res.data : "no data provided"
                     zlib.deflate(payload, (err, buffer) => {
-                        if (err&&!buffer) {
+                        if (err && !buffer) {
                             console.log("\x1b[31m", 'deflating err, can not save to database', err)
                         } else {
-                            const base64=buffer.toString('base64');
                             let httpCode: number;
                             httpCode = res.status ? res.status : 0;
                             monitoringResult.httpCode = httpCode;
@@ -54,7 +52,7 @@ async function startAxios(url: string, endPoint: MonitoredEndPoint) {
                             monitoringResult.monitoredEndPoint = endPoint;
                             resultRepository.save(monitoringResult)
                                 .then(res => {
-                                    console.log('result saved to database', res)
+                                    // console.log('result saved to database', res)
                                 })
                                 .catch(err => {
                                     console.log("\x1b[31m", 'Error saving monitoringResult:')
@@ -87,5 +85,28 @@ async function startAxios(url: string, endPoint: MonitoredEndPoint) {
                         })
                 })
         }, endPoint.monitoredInterval * 1000
-    ))
+    )
 }
+
+const parseUrl=(endPoint:MonitoredEndPoint):string=>{
+    let endPointUrl = endPoint.url
+    let urlObj = url.parse(endPointUrl);
+    urlObj.protocol = urlObj.protocol === 'http' ? 'http' : 'https';
+    urlObj.slashes = true
+    const parsedUrl = url.format(urlObj)
+    return  parsedUrl.replace('///', '//')
+}
+
+endPointEmitter.on('delete',(id:number)=>{
+    clearInterval(intervals[id])
+    delete intervals[id]
+})
+
+endPointEmitter.on('add',(endPoint:MonitoredEndPoint)=>{
+    startAxios(parseUrl(endPoint), endPoint)
+})
+
+endPointEmitter.on('update',(endPoint:MonitoredEndPoint)=>{
+    clearInterval(intervals[endPoint.id])
+    startAxios(parseUrl(endPoint), endPoint)
+})
