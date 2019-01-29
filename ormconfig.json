@@ -1,8 +1,6 @@
-require('dotenv').config()
-
 {
    "type": "mysql",
-   "host": process.env.host,
+   "host": "localhost",
    "port": 3306,
    "username": "alexander",
    "password": "sqlpassword",
