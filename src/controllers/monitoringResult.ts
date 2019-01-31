@@ -21,7 +21,10 @@ export const showMonitoringResults = async (req:RequestUser, res:Response, next:
         }
         const monitoredResults = await monitoredResultRepository.find({
             take: limit,
-            where: { monitoredEndPointId: endPointId }
+            where: { monitoredEndPointId: endPointId },
+            order:{
+                dateOfCheck:"DESC"
+            }
         })
         let parsedMonitoredResults= await Promise.all(monitoredResults.map(async (monitoredResult)=>{
             const buffer=Buffer.from(monitoredResult.payload,'base64')

@@ -26,7 +26,7 @@ export const startWorkers = () => {
 }
 
 const clearIntervalArray = () => {
-    console.log('cleaning get intervals',intervals)
+    console.log('cleaning get request intervals',intervals)
     for (var interval in intervals ){
         if(intervals.hasOwnProperty(interval)){
             clearInterval(intervals[interval])
@@ -96,10 +96,11 @@ async function startAxios(url: string, endPoint: MonitoredEndPoint) {
 const parseUrl=(endPoint:MonitoredEndPoint):string=>{
     let endPointUrl = endPoint.url
     let urlObj = url.parse(endPointUrl);
-    urlObj.protocol = urlObj.protocol === 'http' ? 'http' : 'https';
+    urlObj.protocol = urlObj.protocol === 'http:' ? 'http' : 'https';
     urlObj.slashes = true
     const parsedUrl = url.format(urlObj)
     return  parsedUrl.replace('///', '//')
+   
 }
 
 endPointEmitter.on('delete',(id:number)=>{
