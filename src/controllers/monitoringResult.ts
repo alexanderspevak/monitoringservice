@@ -1,10 +1,13 @@
-import { User, MonitoredEndPoint, MonitoringResult } from '../entity'
+import {  MonitoredEndPoint, MonitoringResult } from '../entity'
 import {  getRepository } from 'typeorm';
 import * as util from 'util';
 import * as zlib from 'zlib';
+import {Response,Next} from 'restify'
 const unzip=util.promisify(zlib.unzip)
+import {RequestUser} from '../interface'
 
-export const showMonitoringResults = async (req, res, next) => {
+
+export const showMonitoringResults = async (req:RequestUser, res:Response, next:Next) => {
     const endPointRepository = getRepository(MonitoredEndPoint);
     const monitoredResultRepository = getRepository(MonitoringResult)
     const endPointId = req.query.id && typeof (parseInt(req.query.id)) === 'number' ? parseInt(req.query.id) : false;
@@ -28,7 +31,7 @@ export const showMonitoringResults = async (req, res, next) => {
                 return monitoredResult
             })
             .catch(err=>{
-                console.log(err)
+                console.log(err.message)
             })
         }))
         res.header('Content-Type', 'application/json')

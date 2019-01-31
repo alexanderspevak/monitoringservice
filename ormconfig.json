@@ -9,7 +9,8 @@
    "logging": false,
    "entities": [
       
-      "src/entity/**/*.ts"
+      "src/entity/**/*.ts",
+      "entity/**/*.js"
    ],
    "migrations": [
       "src/database/migration/**/*.ts"

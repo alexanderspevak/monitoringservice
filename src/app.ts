@@ -1,10 +1,10 @@
 import "reflect-metadata";
 import * as restify from 'restify'
-import { createConnection } from "typeorm";
 import { seeding } from './seeds';
-import { userRouter, monitoredEndPointRouter, monitoringResultRouter } from './routes'
+import { userRouter, monitoredEndPointRouter, monitoringResultRouter } from './routes';
 
-export const startServer = (connection) => {
+
+export const startServer = (connection:any) => {
     seeding(connection)
     const server = restify.createServer()
     server.use(restify.plugins.acceptParser(server.acceptable));
@@ -20,6 +20,7 @@ export const startServer = (connection) => {
             res.send('<p> Hello </p>')
         })
     })
+    return server
 }
 
 

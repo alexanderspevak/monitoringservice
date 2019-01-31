@@ -1,21 +1,29 @@
-{ "compilerOptions": {
-    "module": "commonjs",
-    "declaration": false,
-    "noImplicitAny": false,
-    "removeComments": true,
-    "noLib": false,
-    "allowSyntheticDefaultImports": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "target": "es6",
-    "sourceMap": true,
-    "allowJs": true,
-    "outDir": "./dist",
+{
+  "version": "2.1.1",
+  "compilerOptions": {
+      "lib": [ "es6", "dom"],
+      "outDir": "build/compiled",
+      "target": "es6",
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "importHelpers": true,
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "sourceMap": true,
+      "noImplicitAny": true,
+      "declaration": true,
+      "noFallthroughCasesInSwitch": true,
+      "noImplicitReturns": true,
+      "stripInternal": true,
+      "pretty": true,
+      "strictNullChecks": true,
+      "noUnusedLocals": true,
+      "downlevelIteration": true
   },
-  "include": [
-    "src/**/*.ts"
-  ],
   "exclude": [
-    "node_modules"
-  ],
+      "tmp",
+      "temp",
+      "build",
+      "node_modules"
+  ]
 }

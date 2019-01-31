@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column,PrimaryColumn, OneToMany} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, OneToMany} from "typeorm";
 import {IsEmail} from 'class-validator'
 import {MonitoredEndPoint} from './MonitoredEndpoint'
 

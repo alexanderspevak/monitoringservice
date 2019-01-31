@@ -5,7 +5,12 @@ import * as zlib from 'zlib';
 import * as url from 'url';
 import { endPointEmitter } from '../controllers/monitoredEndPoint'
 
-let intervals = {}
+
+interface Intervals{
+    [key:string]:NodeJS.Timer
+}
+
+let intervals:Intervals = {}
 
 export const startWorkers = () => {
     clearIntervalArray()
@@ -19,7 +24,7 @@ export const startWorkers = () => {
         })
     setInterval(() => {
         startWorkers()
-    }, 60*60 * 1000)
+    },60* 60 * 1000)
 }
 
 const clearIntervalArray = () => {
@@ -52,11 +57,12 @@ async function startAxios(url: string, endPoint: MonitoredEndPoint) {
                             monitoringResult.monitoredEndPoint = endPoint;
                             resultRepository.save(monitoringResult)
                                 .then(res => {
-                                    // console.log('result saved to database', res)
+                                    console.log('result saved to database', res.monitoredEndPoint)
+                                    console.log('statusCode: ',httpCode+'\n\n')
                                 })
                                 .catch(err => {
                                     console.log("\x1b[31m", 'Error saving monitoringResult:')
-                                    console.log("\x1b[31m", "Error:", err)
+                                    console.log("\x1b[31m", "Error:", err.message)
                                 })
                         }
                     })
@@ -64,7 +70,7 @@ async function startAxios(url: string, endPoint: MonitoredEndPoint) {
                     pointRepository.save(endPoint)
                         .catch(err => {
                             console.log("\x1b[31m", 'Error saving :' + endPoint)
-                            console.log("\x1b[31m", "Error:", err)
+                            console.log("\x1b[31m", "Error:", err.message)
                         })
                 })
                 .catch(err => {
@@ -75,13 +81,13 @@ async function startAxios(url: string, endPoint: MonitoredEndPoint) {
                     resultRepository.save(monitoringResult)
                         .catch(err => {
                             console.log("\x1b[31m", 'Error saving monitoringResult:')
-                            console.log("\x1b[31m", "Error:", err)
+                            console.log("\x1b[31m", "Error:", err.message)
                         })
                     endPoint.dateOfLastCheck = new Date();
                     pointRepository.save(endPoint)
                         .catch(err => {
                             console.log("\x1b[31m", 'Error saving :' + endPoint)
-                            console.log("\x1b[31m", "Error:", err)
+                            console.log("\x1b[31m", "Error:", err.message)
                         })
                 })
         }, endPoint.monitoredInterval * 1000
@@ -98,8 +104,10 @@ const parseUrl=(endPoint:MonitoredEndPoint):string=>{
 }
 
 endPointEmitter.on('delete',(id:number)=>{
+    console.log('delete',intervals)
     clearInterval(intervals[id])
     delete intervals[id]
+    console.log(intervals)
 })
 
 endPointEmitter.on('add',(endPoint:MonitoredEndPoint)=>{
@@ -108,5 +116,6 @@ endPointEmitter.on('add',(endPoint:MonitoredEndPoint)=>{
 
 endPointEmitter.on('update',(endPoint:MonitoredEndPoint)=>{
     clearInterval(intervals[endPoint.id])
+    delete intervals[endPoint.id]
     startAxios(parseUrl(endPoint), endPoint)
 })
