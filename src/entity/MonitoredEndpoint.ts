@@ -45,9 +45,9 @@ export class MonitoredEndPoint {
     @Column({nullable:true})
     dateOfLastCheck: Date
 
-    @ManyToOne(type => User, user => user.monitoredEndPoints,{nullable:false})
+    @ManyToOne(type => User, user => user.monitoredEndPoints,{nullable:false,onDelete:'CASCADE'})
     user: User|number
 
-    @OneToMany(type => MonitoringResult, monitoringResult => monitoringResult.monitoredEndPoint,{onDelete:'CASCADE'})
+    @OneToMany(type => MonitoringResult, monitoringResult => monitoringResult.monitoredEndPoint)
     monitoringResult: MonitoringResult[];
 }

@@ -4,13 +4,11 @@ import axios from 'axios';
 import * as zlib from 'zlib';
 import * as url from 'url';
 import { endPointEmitter } from '../controllers/monitoredEndPoint'
+import {Intervals} from '../interface'
 
 
-interface Intervals{
-    [key:string]:NodeJS.Timer
-}
 
-let intervals:Intervals = {}
+export let intervals:Intervals = {}
 
 export const startWorkers = () => {
     clearIntervalArray()
@@ -28,7 +26,7 @@ export const startWorkers = () => {
 }
 
 const clearIntervalArray = () => {
-    console.log('intervals',intervals)
+    console.log('cleaning get intervals',intervals)
     for (var interval in intervals ){
         if(intervals.hasOwnProperty(interval)){
             clearInterval(intervals[interval])
@@ -36,6 +34,7 @@ const clearIntervalArray = () => {
         }
     }
     console.log('cleaned intervals',intervals)
+    console.log('New intervals cycle has started \n')
 }
 async function startAxios(url: string, endPoint: MonitoredEndPoint) {
     intervals[endPoint.id]=setInterval(
@@ -104,10 +103,8 @@ const parseUrl=(endPoint:MonitoredEndPoint):string=>{
 }
 
 endPointEmitter.on('delete',(id:number)=>{
-    console.log('delete',intervals)
     clearInterval(intervals[id])
     delete intervals[id]
-    console.log(intervals)
 })
 
 endPointEmitter.on('add',(endPoint:MonitoredEndPoint)=>{

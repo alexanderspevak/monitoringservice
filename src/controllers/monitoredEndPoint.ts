@@ -1,14 +1,14 @@
 import { MonitoredEndPoint } from '../entity'
 import { getRepository } from 'typeorm'
 import { validate } from 'class-validator';
-import {Response,Next} from 'restify'
-import {RequestUser} from '../interface'
+import { Response, Next } from 'restify'
+import { RequestUser } from '../interface'
 import * as EventEmitter from 'events'
 export class EndPointEmitter extends EventEmitter { }
 export const endPointEmitter = new EndPointEmitter()
 
 
-export const createEndPoint = async (req:RequestUser, res:Response, next:Next) => {
+export const createEndPoint = async (req: RequestUser, res: Response, next: Next) => {
     const pointRepository = getRepository(MonitoredEndPoint)
     const userId = req.user.id;
     const { name, url } = req.body
@@ -37,16 +37,17 @@ export const createEndPoint = async (req:RequestUser, res:Response, next:Next) =
             res.send(err)
         })
 }
-export const updateEndpoint = async (req:RequestUser, res:Response, next:Next) => {
+export const updateEndpoint = async (req: RequestUser, res: Response, next: Next) => {
     const pointRepository = getRepository(MonitoredEndPoint)
     const id = parseInt(req.body.id);
     if (!id && typeof (id) !== "number") {
         return res.send('endpoint id needed to update')
     }
-    const userId=req.user.id
-    const monitoredEndpointArray = await pointRepository.find({ where: { user: userId, id:id } })
-    let monitoredEndpoint=monitoredEndpointArray[0]
+    const userId = req.user.id
+    const monitoredEndpointArray = await pointRepository.find({ where: { user: userId, id: id } })
+    let monitoredEndpoint = monitoredEndpointArray[0]
     if (!monitoredEndpoint) {
+        res.status(400)
         return res.send('Endpoint non existant')
     }
     req.body.name ? monitoredEndpoint.name = req.body.name : false;
@@ -68,8 +69,8 @@ export const updateEndpoint = async (req:RequestUser, res:Response, next:Next) =
             res.send(err)
         })
 }
-export const deleteEndpoint = async (req:RequestUser, res:Response, next:Next) => {
-    const userId=req.user.id
+export const deleteEndpoint = async (req: RequestUser, res: Response, next: Next) => {
+    const userId = req.user.id
     const pointRepository = getRepository(MonitoredEndPoint)
 
     if (!req.query.id) {
@@ -81,8 +82,8 @@ export const deleteEndpoint = async (req:RequestUser, res:Response, next:Next) =
         res.status(400)
         res.send("invalid id")
     }
-    const monitoredEndpoint=await pointRepository.find({ where: { user: userId, id:id } })
-    if (monitoredEndpoint[0] ) {
+    const monitoredEndpoint = await pointRepository.find({ where: { user: userId, id: id } })
+    if (monitoredEndpoint[0]) {
         return pointRepository.delete(id)
             .then(point => {
                 endPointEmitter.emit('delete', id)
@@ -93,12 +94,12 @@ export const deleteEndpoint = async (req:RequestUser, res:Response, next:Next) =
                 res.status(500)
                 res.send(err)
             })
+    } else {
+        res.status(400)
+        res.send('No endpoint with id of:' + id + ' under user id:' + userId)
     }
-    res.status(400)
-    res.send('No endpoint with id of:' + id + ' under user id:' + userId)
-
 }
-export const showEndpoints = async (req:RequestUser, res:Response, next:Next) => {
+export const showEndpoints = async (req: RequestUser, res: Response, next: Next) => {
     const pointRepository = getRepository(MonitoredEndPoint)
     const userId = req.user.id;
     pointRepository.find({ where: { user: userId } })
