@@ -1,12 +1,17 @@
-import { createConnection } from "typeorm";
-import { startServer } from './app'
+import { createConnection } from 'typeorm'
+import { Server } from './app'
 import { startWorkers } from './workers'
+import { UserSeeding } from './seeds/user'
 
-
-createConnection().then(connection => {
-    startServer(connection)
+const startApp = async () => {
+  try {
+    const connection = await createConnection()
+    const server = new Server([new UserSeeding(connection)])
+    await server.start()
     setTimeout(() => startWorkers(), 3000)
-})
-    .catch(err => {
-        console.log(err)
-    })
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+startApp()

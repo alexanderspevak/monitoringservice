@@ -8,14 +8,17 @@
       "test": "nyc mocha",
       "watch": "mocha-typescript-watch",
       "start": "ts-node src/index.ts",
-      "prepare": "tsc"
+      "prepare": "tsc",
+      "eslint": "eslint --ext '.js,.jsx,.ts,.tsx' .",
+      "typescript": "tsc --project ./tsconfig.json --noEmit",
+      "check": "npm run eslint && npm run typescript"
    },
    "author": "",
    "license": "ISC",
+   "lint-staged": {
+      "*.{js,ts}": "eslint"
+   },
    "dependencies": {
-      "@types/node": "^10.12.18",
-      "@types/restify": "^7.2.7",
-      "@types/valid-url": "^1.0.2",
       "axios": "^0.18.0",
       "class-validator": "^0.9.1",
       "dotenv": "^6.2.0",
@@ -35,13 +38,23 @@
       "@types/chai-http": "^3.0.5",
       "@types/mocha": "^5.2.5",
       "@types/node": "^8.0.29",
+      "@types/restify": "^7.2.7",
+      "@types/valid-url": "^1.0.2",
+      "@typescript-eslint/eslint-plugin": "^1.13.0",
+      "@typescript-eslint/parser": "^1.13.0",
       "chai": "^4.2.0",
       "chai-http": "^4.2.1",
+      "eslint": "^5.16.0",
+      "eslint-config-standard": "^13.0.1",
+      "eslint-plugin-import": "^2.18.2",
+      "eslint-plugin-node": "^9.1.0",
+      "eslint-plugin-promise": "^4.2.1",
+      "eslint-plugin-standard": "^4.0.0",
       "mocha": "^5.2.0",
       "mocha-typescript": "^1.1.17",
       "nyc": "^13.1.0",
       "source-map-support": "^0.5.10",
       "ts-node": "3.3.0",
-      "typescript": "^2.5.2"
+      "typescript": "^3.5.3"
    }
 }

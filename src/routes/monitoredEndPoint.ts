@@ -1,10 +1,9 @@
-import {Router}  from 'restify-router';
-import {endPointController,loginMiddleWare} from '../controllers'
+import { Router } from 'restify-router'
+import { endPointController, loginMiddleWare } from '../controllers'
 
-export const  monitoredEndPointRouter=new Router();
+export const monitoredEndPointRouter = new Router()
 monitoredEndPointRouter.use(loginMiddleWare)
-monitoredEndPointRouter.get('/endpoints',endPointController.showEndpoints)
-monitoredEndPointRouter.post('/createendpoint',endPointController.createEndPoint)
-monitoredEndPointRouter.put('/updateendpoint',endPointController.updateEndpoint)
-monitoredEndPointRouter.del('/deleteendpoint',endPointController.deleteEndpoint)
-
+monitoredEndPointRouter.get('/endpoints', endPointController.showEndpoints)
+monitoredEndPointRouter.post('/createendpoint', endPointController.createEndPoint)
+monitoredEndPointRouter.put('/updateendpoint', endPointController.updateEndpoint)
+monitoredEndPointRouter.del('/deleteendpoint', endPointController.deleteEndpoint)

@@ -1,0 +1,32 @@
+{
+  "env": {
+    "es6": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "extends": "standard",
+  "plugins": [
+    "standard",
+    "promise"
+  ],
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {
+    "no-unneeded-ternary": "off"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.ts", "**/*.tsx"],
+      "rules": {
+        "no-unused-vars": ["off"],
+        "no-undef": ["off"]
+      }
+    }
+  ],
+  "globals": {
+    "GRAPHQL_ENDPOINT": false,
+    "FileReader": false
+  }
+}
