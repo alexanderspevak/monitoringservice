@@ -1,59 +1,26 @@
 import * as util from 'util'
 import * as zlib from 'zlib'
-import { getRepository } from 'typeorm'
+import { getRepository, Repository } from 'typeorm'
 import { MonitoredEndpoint, MonitoringResult } from '../entity'
-import { Response, Next } from 'restify'
+import { Response } from 'restify'
 import { RequestUser } from '../interface'
 const unzip = util.promisify(zlib.unzip)
 
-export const showMonitoringResults = async (req:RequestUser, res:Response, next:Next) => {
-  const endPointRepository = getRepository(MonitoredEndpoint)
-  const monitoredResultRepository = getRepository(MonitoringResult)
-  const endPointId = req.query.id && typeof (parseInt(req.query.id)) === 'number' ? parseInt(req.query.id) : false
-  const limit = req.query.limit && typeof (parseInt(req.query.limit)) === 'number' ? req.query.limit : 10
-  const userId = req.user.id
-  if (endPointId) {
-    const endPoint = await endPointRepository.find({ where: { user: userId } })
-    if (!endPoint) {
-      res.status(400)
-      return res.send('No endpoint with id: ' + endPointId + ' under logged in user')
-    }
-    const monitoredResults = await monitoredResultRepository.find({
-      take: limit,
-      where: { monitoredEndPointId: endPointId },
-      order: {
-        dateOfCheck: 'DESC'
-      }
-    })
-    const parsedMonitoredResults = await Promise.all(monitoredResults.map(async (monitoredResult) => {
-      const buffer = Buffer.from(monitoredResult.payload, 'base64')
-      return unzip(buffer)
-        .then((unzipedPayload: any) => {
-          monitoredResult.payload = unzipedPayload.toString()
-          return monitoredResult
-        })
-        .catch(err => {
-          console.log(err.message)
-        })
-    }))
-    res.header('Content-Type', 'application/json')
-    res.status(200)
-    res.send(parsedMonitoredResults)
-  } else {
-    res.status(400)
-    res.send('EndPoint {id} needed in query parameter')
-  }
-}
+export class MonitoringResultController {
+  monitoringResultRepository: Repository<MonitoringResult>
 
-class MonitoringResultController {
-  monitoringResultRepository = getRepository(MonitoringResult)
+  endpointRepository: Repository<MonitoredEndpoint>
 
-  endpointRepository = getRepository(MonitoredEndpoint)
+  public getMonitoredResults = async (req: RequestUser, res: Response) => {
+    this.monitoringResultRepository = getRepository(MonitoringResult)
+    this.endpointRepository = getRepository(MonitoredEndpoint)
 
-  public async getMonitoredResults (req: RequestUser, res: Response) {
     const {
+      user: {
+        id: userId = undefined
+      } = {},
       query: {
-        id: userId,
+        id,
         limit: uncheckedLimit
       } = {
         id: undefined,
@@ -61,11 +28,12 @@ class MonitoringResultController {
       }
     } = req
 
-    const endpointId = this.parseEndpointId(userId)
+    const endpointId = this.parseEndpointId(id)
+
     const limit = this.parseResponseLimit(uncheckedLimit)
 
-    if (endpointId) {
-      if (!await this.checkEndpoint(endpointId)) {
+    if (endpointId && userId) {
+      if (!await this.checkEndpoint(userId, endpointId)) {
         res.status(400)
 
         return res.send('No endpoint with id: ' + endpointId + ' under logged in user')
@@ -97,8 +65,8 @@ class MonitoringResultController {
     return 10
   }
 
-  private checkEndpoint (userId: number): Promise<MonitoredEndpoint|undefined> {
-    return this.endpointRepository.findOne({ where: { user: userId } })
+  private checkEndpoint (userId: number, id: number): Promise<MonitoredEndpoint| undefined> {
+    return this.endpointRepository.findOne({ where: { userId, id } })
   }
 
   private async getResults (monitoredEndPointId: number, take: number): Promise<MonitoringResult[]> {
@@ -123,4 +91,4 @@ class MonitoringResultController {
   }
 }
 
-export const monitoringResultController = new MonitoringResultController()
+ export const monitoringResultController = new MonitoringResultController()

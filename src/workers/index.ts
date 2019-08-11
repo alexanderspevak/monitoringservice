@@ -1,11 +1,12 @@
 import { MonitoredEndpoint, MonitoringResult } from '../entity'
-import { getRepository } from 'typeorm'
+import { getRepository, Repository } from 'typeorm'
 import axios from 'axios'
 import * as zlib from 'zlib'
 import * as url from 'url'
 import { endPointEmitter } from '../controllers/monitoredEndPoint'
 import { Intervals } from '../interface'
-
+import { promisify } from 'util'
+const deflate = promisify(zlib.deflate)
 export const intervals:Intervals = {}
 
 export const startWorkers = () => {
@@ -18,9 +19,6 @@ export const startWorkers = () => {
         startAxios(parsedUrl, endPoint)
       })
     })
-  setInterval(() => {
-    startWorkers()
-  }, 60 * 60 * 1000)
 }
 
 const clearIntervalArray = () => {
@@ -93,9 +91,8 @@ async function startAxios (url: string, endPoint: MonitoredEndpoint) {
 
 const parseUrl = (endPoint:MonitoredEndpoint):string => {
   const endPointUrl = endPoint.url
-  const urlObj = url.parse(endPointUrl)
+  const urlObj = new URL(endPointUrl)
   urlObj.protocol = urlObj.protocol === 'http:' ? 'http' : 'https'
-  urlObj.slashes = true
   const parsedUrl = url.format(urlObj)
   return parsedUrl.replace('///', '//')
 }
@@ -114,3 +111,103 @@ endPointEmitter.on('update', (endPoint:MonitoredEndpoint) => {
   delete intervals[endPoint.id]
   startAxios(parseUrl(endPoint), endPoint)
 })
+
+export class Workers {
+  private intervals:Intervals = {}
+
+  endpointRepository: Repository<MonitoredEndpoint>
+
+  monitoringResultRepository: Repository<MonitoringResult>
+
+  async start () {
+    this.endpointRepository = getRepository(MonitoredEndpoint)
+    this.monitoringResultRepository = getRepository(MonitoringResult)
+    const monitoredEndpoints = await this.endpointRepository.find()
+    monitoredEndpoints.forEach(endpoint => this.startEndpointCycle(endpoint))
+  }
+
+  async startEndpointCycle (endpoint: MonitoredEndpoint) {
+    this.intervals[endpoint.id] = setInterval(
+      () => {
+        this.monitoredEndpointCallback(endpoint)
+      }, endpoint.monitoredInterval * 1000
+    )
+  }
+
+  private monitoredEndpointCallback = async (endpoint: MonitoredEndpoint) => {
+    try {
+      const endpointResponse = await axios.get(this.parseUrl(endpoint))
+      const monitoringResult = new MonitoringResult()
+      const payload: string = endpointResponse.data || 'no data provided'
+      const buffer = await deflate(payload)
+
+      if (Buffer.isBuffer(buffer)) {
+        monitoringResult.payload = buffer.toString('base64')
+      }
+
+      const httpCode = endpointResponse.status || 0
+      monitoringResult.httpCode = httpCode
+      monitoringResult.monitoredEndPoint = endpoint
+
+      await this.saveMonitoringResult(monitoringResult)
+      await this.updateMonitoredEndpoint(endpoint)
+      console.log('_________________________________________________')
+    } catch (err) {
+      console.log('\x1b[31m', 'No response from endpoint', err)
+
+      const monitoringResult = new MonitoringResult()
+      monitoringResult.httpCode = 500
+      monitoringResult.payload = (Buffer.from('no response provided')).toString('base64')
+      monitoringResult.monitoredEndPoint = endpoint
+
+      await this.saveMonitoringResult(monitoringResult)
+      await this.updateMonitoredEndpoint(endpoint)
+      console.log('_________________________________________________')
+    }
+  }
+
+  private async saveMonitoringResult (monitoringResult: MonitoringResult) {
+    try {
+      await this.monitoringResultRepository.save(monitoringResult)
+      console.log('MOnitoring result saved with statusCode: ', monitoringResult.httpCode)
+    } catch (error) {
+      console.log('\x1b[31m', 'Error saving monitoringResult:')
+      console.log('\x1b[31m', 'Error:', error.message)
+    }
+  }
+
+  private async updateMonitoredEndpoint (monitoredEndpoint: MonitoredEndpoint) {
+    try {
+      monitoredEndpoint.dateOfLastCheck = new Date()
+      await this.endpointRepository.save(monitoredEndpoint)
+      console.log('result saved to database', monitoredEndpoint)
+    } catch (error) {
+      console.log('\x1b[31m', 'Error saving :' + monitoredEndpoint)
+      console.log('\x1b[31m', 'Error:', error.message)
+    }
+  }
+
+  private parseUrl (endPoint:MonitoredEndpoint):string {
+    const endPointUrl = endPoint.url
+    const urlObj = new URL(endPointUrl)
+    urlObj.protocol = urlObj.protocol === 'http:' ? 'http' : 'https'
+    const parsedUrl = url.format(urlObj)
+    return parsedUrl.replace('///', '//')
+  }
+
+  private addEndpoint(endpoint: MonitoredEndpoint) {
+    this.startEndpointCycle(endpoint)
+  }
+
+  private removeEndpoint (endpoint: MonitoredEndpoint) {
+    clearInterval(this.intervals[endpoint.id])
+    delete this.intervals[endpoint.id]
+  }
+
+  private updateEndpoint(endpoint: MonitoredEndpoint) {
+    this.removeEndpoint(endpoint)
+    this.addEndpoint(endpoint)
+  }
+}
+
+export const workers = new Workers()
