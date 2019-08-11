@@ -1,113 +1,168 @@
 import { MonitoredEndpoint } from '../entity'
-import { getRepository } from 'typeorm'
 import { validate } from 'class-validator'
 import { Response, Next } from 'restify'
-import { RequestUser } from '../interface'
-import * as EventEmitter from 'events'
-export class EndPointEmitter extends EventEmitter { }
-export const endPointEmitter = new EndPointEmitter()
+import { RequestUser, IUpdateKey } from '../types'
+import { workers } from '../workers'
+import { ControllerClass } from './ControllerClass'
 
-export const createEndPoint = async (req: RequestUser, res: Response, next: Next) => {
-  const pointRepository = getRepository(MonitoredEndpoint)
-  const userId = req.user.id
-  const { name, url } = req.body
-  const monitoredInterval = parseInt(req.body.monitoredInterval)
-  if (typeof (monitoredInterval) !== 'number') {
-    return res.send('Invalid interval')
-  }
-  const monitoredEndpoint = new MonitoredEndpoint()
-  monitoredEndpoint.name = name
-  monitoredEndpoint.url = url
-  monitoredEndpoint.monitoredInterval = monitoredInterval
-  monitoredEndpoint.user = userId
-  res.header('Content-Type', 'application/json')
-  const errors = await validate(monitoredEndpoint)
-  if (errors.length > 0) {
-    res.status(400)
-    return res.send(errors)
-  }
-  pointRepository.save(monitoredEndpoint)
-    .then((endPoint) => {
-      endPointEmitter.emit('add', endPoint)
-      res.status(200)
-      res.send(endPoint)
-    })
-    .catch(err => {
-      res.send(err)
-    })
-}
-export const updateEndpoint = async (req: RequestUser, res: Response, next: Next) => {
-  const pointRepository = getRepository(MonitoredEndpoint)
-  const id = parseInt(req.body.id)
-  if (!id && typeof (id) !== 'number') {
-    return res.send('endpoint id needed to update')
-  }
-  const userId = req.user.id
-  const monitoredEndpointArray = await pointRepository.find({ where: { user: userId, id: id } })
-  const monitoredEndpoint = monitoredEndpointArray[0]
-  if (!monitoredEndpoint) {
-    res.status(400)
-    return res.send('Endpoint non existant')
-  }
-  req.body.name ? monitoredEndpoint.name = req.body.name : false
-  req.body.url ? monitoredEndpoint.url = req.body.url : false
-  req.body.monitoredInterval && typeof (parseInt(req.body.monitoredInterval)) === 'number' ? monitoredEndpoint.monitoredInterval = parseInt(req.body.monitoredInterval) : false
-  const errors = await validate(monitoredEndpoint)
-  if (errors.length > 0) {
-    res.status(400)
-    return res.send(errors)
-  }
-  await pointRepository.save(monitoredEndpoint)
-    .then((endPoint) => {
-      endPointEmitter.emit('update', endPoint)
-      res.header('Content-Type', 'application/json')
-      res.status(200)
-      res.send(endPoint)
-    })
-    .catch(err => {
-      res.send(err)
-    })
-}
-export const deleteEndpoint = async (req: RequestUser, res: Response, next: Next) => {
-  const userId = req.user.id
-  const pointRepository = getRepository(MonitoredEndpoint)
+export class MonitoredEndPointController extends ControllerClass {
+  workersRepository = workers
 
-  if (!req.query.id) {
-    res.status(400)
-    return res.send('id needed to delete')
-  }
-  const id = typeof (parseInt(req.query.id)) === 'number' ? parseInt(req.query.id) : 0
-  if (!id) {
-    res.status(400)
-    res.send('invalid id')
-  }
-  const monitoredEndpoint = await pointRepository.find({ where: { user: userId, id: id } })
-  if (monitoredEndpoint[0]) {
-    return pointRepository.delete(id)
-      .then(point => {
-        endPointEmitter.emit('delete', id)
-        res.status(200)
-        res.send('Affected Rows: ' + point.raw.affectedRows)
-      })
-      .catch(err => {
-        res.status(500)
-        res.send(err)
-      })
-  } else {
-    res.status(400)
-    res.send('No endpoint with id of:' + id + ' under user id:' + userId)
-  }
-}
-export const showEndpoints = async (req: RequestUser, res: Response, next: Next) => {
-  const pointRepository = getRepository(MonitoredEndpoint)
-  const userId = req.user.id
-  pointRepository.find({ where: { user: userId } })
-    .then(endpoints => {
+  public saveEndpoint = async (req: RequestUser, res: Response) => {
+    try {
+      const monitoredEndpoint = this.parseMonitoredEndpoint(req, new MonitoredEndpoint())
+      console.log('monitoredEndpoint', monitoredEndpoint)
       res.header('Content-Type', 'application/json')
-      res.send(endpoints)
+
+      const errors = await validate(monitoredEndpoint)
+      if (errors.length > 0) {
+        res.status(400)
+
+        return res.send(errors)
+      }
+
+      this.handleResponseSaveEndpoint(res, await this.workersRepository.saveMonitoredEndpoint(monitoredEndpoint), 'addEndpointCycle')
+    } catch (error) {
+      this.handleServerError(error, res)
+    }
+  }
+
+  public updateEndpoint = async (req: RequestUser, res: Response) => {
+    try {
+      res.header('Content-Type', 'application/json')
+      const id = this.getId(req, res)
+      if (!id) {
+        return
+      }
+      const userId = req.user.id
+      const monitoredEndpoint = await this.findMonitoredEndpoint(id, userId)
+      if (!monitoredEndpoint) {
+        res.status(400)
+
+        return res.send({ message: 'Endpoint non existant' })
+      }
+      const updatedMonitoredEndpoint = this.parseMonitoredEndpoint(req, monitoredEndpoint)
+      const errors = await validate(updatedMonitoredEndpoint)
+      if (errors.length > 0) {
+        res.status(400)
+
+        return res.send(errors)
+      }
+
+      this.handleResponseSaveEndpoint(res, await this.workersRepository.saveMonitoredEndpoint(updatedMonitoredEndpoint), 'updateEndpointCycle')
+    } catch (error) {
+      this.handleServerError(error, res)
+    }
+  }
+
+  public deleteEndpoint = async (req: RequestUser, res: Response) => {
+    try {
+      res.header('Content-Type', 'application/json')
+      const userId = req.user.id
+      const id = this.getId(req, res)
+      if (!id) {
+        return
+      }
+      const monitoredEndpoint = await this.findMonitoredEndpoint(id, userId)
+
+      if (!monitoredEndpoint) {
+        this.handleNotFoundMonitoredEndpoint(res)
+
+        return
+      }
+
+      const deleteResult = await this.workersRepository.monitoredEndpointRepository.delete(id)
+      res.status(200)
+      res.send({ message: 'Affected Rows: ' + deleteResult.raw.affectedRows })
+      this.workersRepository.removeEndpointCycle(monitoredEndpoint)
+    } catch (error) {
+      this.handleServerError(error, res)
+    }
+  }
+
+  public showEndpoints = async (req: RequestUser, res: Response, next: Next) => {
+    try {
+      const userId = req.user.id
+      const monitoredEndpoints = await this.workersRepository.monitoredEndpointRepository.find({
+        where: {
+          user: userId
+        }
+      })
+      res.header('Content-Type', 'application/json')
+      res.send(monitoredEndpoints)
+    } catch (error) {
+      this.handleServerError(error, res)
+    }
+  }
+
+  private findMonitoredEndpoint = async (id:number, userId:number) => {
+    const monitoredEndpoint = await this.workersRepository.monitoredEndpointRepository.findOne({
+      where: {
+        user: userId,
+        id: id
+      }
     })
-    .catch(err => {
-      res.status(500)
-      res.send(err)
-    })
+
+    if (!monitoredEndpoint) {
+      return false
+    }
+
+    return monitoredEndpoint
+  }
+
+  private handleNotFoundMonitoredEndpoint = (res: Response) => {
+    res.status(400)
+    res.send('No such endpoint')
+    return false
+  }
+
+  private parseMonitoredEndpoint = (req: RequestUser, monitoredEndpoint: MonitoredEndpoint) => {
+    const {
+      user: {
+        id: userId
+      },
+      body: {
+        name,
+        url,
+        monitoredInterval
+      }
+    } = req
+
+    monitoredEndpoint.user = userId || monitoredEndpoint.user
+    monitoredEndpoint.name = name || monitoredEndpoint.name
+    monitoredEndpoint.url = url || monitoredEndpoint.url
+    monitoredEndpoint.monitoredInterval = monitoredInterval ? parseInt(monitoredInterval) : monitoredEndpoint.monitoredInterval
+
+    return monitoredEndpoint
+  }
+
+  private handleResponseSaveEndpoint (res: Response, monitoredEndpoint: MonitoredEndpoint | false, updateKey: IUpdateKey) {
+    if (monitoredEndpoint) {
+      this.workersRepository[updateKey](monitoredEndpoint)
+      res.status(200)
+
+      return res.send(monitoredEndpoint)
+    }
+
+    res.status(500)
+    return res.send({ message: 'error saving monitoredEndpoint' })
+  }
+
+  private getId = (req: RequestUser, res: Response):number|false => {
+    const id = parseInt(req.body.id)
+    if (id && typeof (id) === 'number') {
+      return id
+    }
+
+    return this.handleResponseInvalidId(res)
+  }
+
+  private handleResponseInvalidId = (res: Response):false => {
+    res.status(400)
+    res.send({ message: 'endpoint id needed to update' })
+
+    return false
+  }
 }
+
+export const monitoredEndpointController = new MonitoredEndPointController()

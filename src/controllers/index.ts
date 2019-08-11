@@ -1,10 +1,9 @@
-import { monitoringResultController, showMonitoringResults } from './monitoringResult'
-import * as endPointController from './monitoredEndPoint'
+import { monitoringResultController } from './monitoringResult'
+import { monitoredEndpointController } from './monitoredEndPoint'
 import { loginMiddleWare } from './loginMiddleWare'
 
 export {
-  endPointController,
+  monitoredEndpointController,
   loginMiddleWare,
-  monitoringResultController,
-  showMonitoringResults
+  monitoringResultController
 }

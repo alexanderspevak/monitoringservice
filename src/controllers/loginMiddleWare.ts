@@ -1,7 +1,7 @@
 import { User } from '../entity'
 import { getRepository } from 'typeorm'
 import { Response, Next } from 'restify'
-import { RequestUser } from '../interface'
+import { RequestUser } from '../types'
 
 export const loginMiddleWare = async (req: RequestUser, res: Response, next: Next) => {
   const userRepository = getRepository(User)

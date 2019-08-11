@@ -36,10 +36,10 @@ export class MonitoredEndpoint {
     @Column()
     @Max(60)
     @Min(5)
-    monitoredInterval: number;
+    monitoredInterval: number
 
     @CreateDateColumn()
-    dateOfCreation: Date;
+    dateOfCreation: Date
 
     @Column({ nullable: true })
     dateOfLastCheck: Date
@@ -48,5 +48,5 @@ export class MonitoredEndpoint {
     user: User|number
 
     @OneToMany(type => MonitoringResult, monitoringResult => monitoringResult.monitoredEndPoint)
-    monitoringResult: MonitoringResult[];
+    monitoringResult: MonitoringResult[]
 }
