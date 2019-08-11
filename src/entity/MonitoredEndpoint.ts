@@ -1,29 +1,28 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn,  ManyToOne, OneToMany, Unique } from "typeorm";
-import { User } from "./User";
-import { MonitoringResult } from './MonitoringResult';
-import {ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments, Validate, Min, Max } from "class-validator";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, Unique } from 'typeorm'
+import { User } from './User'
+import { MonitoringResult } from './MonitoringResult'
+import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments, Validate, Min, Max } from 'class-validator'
 
+@ValidatorConstraint({ name: 'isUrl', async: false })
+class IsUrl implements ValidatorConstraintInterface {
+  validate (url: string, args: ValidationArguments) {
+    var pattern = new RegExp('^(https?:\\/\\/)?' +
+        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' +
+        '((\\d{1,3}\\.){3}\\d{1,3}))' +
+        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
+        '(\\?[;&amp;a-z\\d%_.~+=-]*)?' +
+        '(\\#[-a-z\\d_]*)?$', 'i')
+    return pattern.test(url)
+  }
 
-
-@ValidatorConstraint({ name: "isUrl", async: false })
-class IsUrl implements ValidatorConstraintInterface{
-    validate(url: string, args: ValidationArguments) {
-        var pattern = new RegExp('^(https?:\\/\\/)?'+ 
-        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|'+ 
-        '((\\d{1,3}\\.){3}\\d{1,3}))'+ 
-        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+
-        '(\\?[;&amp;a-z\\d%_.~+=-]*)?'+
-        '(\\#[-a-z\\d_]*)?$','i');
-        return pattern.test(url);
+  defaultMessage (args: ValidationArguments) {
+    return 'Url is not valid'
+  }
 }
-defaultMessage(args: ValidationArguments) {
-    return "Url is not valid";
-}
-}
 
-@Unique(["user", "url"])
+@Unique(['user', 'url'])
 @Entity()
-export class MonitoredEndPoint {
+export class MonitoredEndpoint {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -42,10 +41,10 @@ export class MonitoredEndPoint {
     @CreateDateColumn()
     dateOfCreation: Date;
 
-    @Column({nullable:true})
+    @Column({ nullable: true })
     dateOfLastCheck: Date
 
-    @ManyToOne(type => User, user => user.monitoredEndPoints,{nullable:false,onDelete:'CASCADE'})
+    @ManyToOne(type => User, user => user.monitoredEndPoints, { nullable: false, onDelete: 'CASCADE' })
     user: User|number
 
     @OneToMany(type => MonitoringResult, monitoringResult => monitoringResult.monitoredEndPoint)

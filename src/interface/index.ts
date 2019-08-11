@@ -5,6 +5,6 @@ export interface RequestUser extends Request {
     user: User
 }
 
-export interface Intervals{
-    [key:string]:NodeJS.Timer
+export interface Intervals {
+    [key:string]: NodeJS.Timer
 }

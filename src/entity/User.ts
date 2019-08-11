@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm'
 import { IsEmail } from 'class-validator'
-import { MonitoredEndPoint } from './MonitoredEndpoint'
+import { MonitoredEndpoint } from './MonitoredEndpoint'
 
 @Entity()
 export class User {
@@ -17,6 +17,6 @@ export class User {
     @Column({ unique: true })
     accessToken: string;
 
-    @OneToMany(type => MonitoredEndPoint, monitoredEndPoint => monitoredEndPoint.user)
-    monitoredEndPoints: MonitoredEndPoint[];
+    @OneToMany(type => MonitoredEndpoint, monitoredEndPoint => monitoredEndPoint.user)
+    monitoredEndPoints: MonitoredEndpoint[]
 }

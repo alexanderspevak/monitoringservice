@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm'
-import { MonitoredEndPoint } from './MonitoredEndpoint'
+import { MonitoredEndpoint } from './MonitoredEndpoint'
 @Entity()
 export class MonitoringResult {
     @PrimaryGeneratedColumn()
@@ -14,6 +14,6 @@ export class MonitoringResult {
     @Column({ type: 'longtext' })
     payload: string;
 
-    @ManyToOne(type => MonitoredEndPoint, monitoredEndPoint => monitoredEndPoint.monitoringResult, { nullable: false, onDelete: 'CASCADE' })
-    monitoredEndPoint:MonitoredEndPoint
+    @ManyToOne(type => MonitoredEndpoint, monitoredEndPoint => monitoredEndPoint.monitoringResult, { nullable: false, onDelete: 'CASCADE' })
+    monitoredEndPoint:MonitoredEndpoint
 }

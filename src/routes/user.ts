@@ -1,7 +1,7 @@
-import {Router}  from 'restify-router';
-export const  userRouter=new Router();
-import {Request,Response,Next} from 'restify'
+import { Router } from 'restify-router'
+import { Request, Response } from 'restify'
+export const userRouter = new Router()
 
-userRouter.get('/users',(req:Request,res:Response,next:Next)=>{
-    res.send('hello users')
+userRouter.get('/users', (req:Request, res:Response) => {
+  res.send('hello users')
 })

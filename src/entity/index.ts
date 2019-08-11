@@ -1,5 +1,5 @@
-import { MonitoredEndPoint } from './MonitoredEndpoint'
+import { MonitoredEndpoint } from './MonitoredEndpoint'
 import { MonitoringResult } from './MonitoringResult'
 import { User } from './User'
 
-export { MonitoredEndPoint, MonitoringResult, User }
+export { MonitoredEndpoint, MonitoringResult, User }

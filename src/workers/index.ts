@@ -1,4 +1,4 @@
-import { MonitoredEndPoint, MonitoringResult } from '../entity'
+import { MonitoredEndpoint, MonitoringResult } from '../entity'
 import { getRepository } from 'typeorm'
 import axios from 'axios'
 import * as zlib from 'zlib'
@@ -10,7 +10,7 @@ export const intervals:Intervals = {}
 
 export const startWorkers = () => {
   clearIntervalArray()
-  const pointRepository = getRepository(MonitoredEndPoint)
+  const pointRepository = getRepository(MonitoredEndpoint)
   pointRepository.find()
     .then(endPoints => {
       endPoints.forEach(endPoint => {
@@ -34,10 +34,10 @@ const clearIntervalArray = () => {
   console.log('cleaned intervals', intervals)
   console.log('New intervals cycle has started \n')
 }
-async function startAxios (url: string, endPoint: MonitoredEndPoint) {
+async function startAxios (url: string, endPoint: MonitoredEndpoint) {
   intervals[endPoint.id] = setInterval(
     () => {
-      const pointRepository = getRepository(MonitoredEndPoint)
+      const pointRepository = getRepository(MonitoredEndpoint)
       const resultRepository = getRepository(MonitoringResult)
       const monitoringResult = new MonitoringResult()
       axios.get(url)
@@ -91,7 +91,7 @@ async function startAxios (url: string, endPoint: MonitoredEndPoint) {
   )
 }
 
-const parseUrl = (endPoint:MonitoredEndPoint):string => {
+const parseUrl = (endPoint:MonitoredEndpoint):string => {
   const endPointUrl = endPoint.url
   const urlObj = url.parse(endPointUrl)
   urlObj.protocol = urlObj.protocol === 'http:' ? 'http' : 'https'
@@ -105,11 +105,11 @@ endPointEmitter.on('delete', (id:number) => {
   delete intervals[id]
 })
 
-endPointEmitter.on('add', (endPoint:MonitoredEndPoint) => {
+endPointEmitter.on('add', (endPoint:MonitoredEndpoint) => {
   startAxios(parseUrl(endPoint), endPoint)
 })
 
-endPointEmitter.on('update', (endPoint:MonitoredEndPoint) => {
+endPointEmitter.on('update', (endPoint:MonitoredEndpoint) => {
   clearInterval(intervals[endPoint.id])
   delete intervals[endPoint.id]
   startAxios(parseUrl(endPoint), endPoint)

@@ -1,4 +1,4 @@
-import { MonitoredEndPoint } from '../entity'
+import { MonitoredEndpoint } from '../entity'
 import { getRepository } from 'typeorm'
 import { validate } from 'class-validator'
 import { Response, Next } from 'restify'
@@ -8,14 +8,14 @@ export class EndPointEmitter extends EventEmitter { }
 export const endPointEmitter = new EndPointEmitter()
 
 export const createEndPoint = async (req: RequestUser, res: Response, next: Next) => {
-  const pointRepository = getRepository(MonitoredEndPoint)
+  const pointRepository = getRepository(MonitoredEndpoint)
   const userId = req.user.id
   const { name, url } = req.body
   const monitoredInterval = parseInt(req.body.monitoredInterval)
   if (typeof (monitoredInterval) !== 'number') {
     return res.send('Invalid interval')
   }
-  const monitoredEndpoint = new MonitoredEndPoint()
+  const monitoredEndpoint = new MonitoredEndpoint()
   monitoredEndpoint.name = name
   monitoredEndpoint.url = url
   monitoredEndpoint.monitoredInterval = monitoredInterval
@@ -37,7 +37,7 @@ export const createEndPoint = async (req: RequestUser, res: Response, next: Next
     })
 }
 export const updateEndpoint = async (req: RequestUser, res: Response, next: Next) => {
-  const pointRepository = getRepository(MonitoredEndPoint)
+  const pointRepository = getRepository(MonitoredEndpoint)
   const id = parseInt(req.body.id)
   if (!id && typeof (id) !== 'number') {
     return res.send('endpoint id needed to update')
@@ -70,7 +70,7 @@ export const updateEndpoint = async (req: RequestUser, res: Response, next: Next
 }
 export const deleteEndpoint = async (req: RequestUser, res: Response, next: Next) => {
   const userId = req.user.id
-  const pointRepository = getRepository(MonitoredEndPoint)
+  const pointRepository = getRepository(MonitoredEndpoint)
 
   if (!req.query.id) {
     res.status(400)
@@ -99,7 +99,7 @@ export const deleteEndpoint = async (req: RequestUser, res: Response, next: Next
   }
 }
 export const showEndpoints = async (req: RequestUser, res: Response, next: Next) => {
-  const pointRepository = getRepository(MonitoredEndPoint)
+  const pointRepository = getRepository(MonitoredEndpoint)
   const userId = req.user.id
   pointRepository.find({ where: { user: userId } })
     .then(endpoints => {
