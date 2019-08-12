@@ -1,21 +1,19 @@
 import * as util from 'util'
 import * as zlib from 'zlib'
-import { getRepository, Repository } from 'typeorm'
 import { MonitoredEndpoint, MonitoringResult } from '../entity'
 import { Response } from 'restify'
 import { RequestUser } from '../types'
 import { ControllerClass } from './ControllerClass'
+import { monitoredEndpointService, monitoringResultService } from '../services'
 const unzip = util.promisify(zlib.unzip)
 
 export class MonitoringResultController extends ControllerClass {
-  monitoringResultRepository: Repository<MonitoringResult>
+  service = monitoringResultService
 
-  endpointRepository: Repository<MonitoredEndpoint>
+  monitoredEndpointService = monitoredEndpointService
 
   public getMonitoredResults = async (req: RequestUser, res: Response) => {
     try {
-      this.monitoringResultRepository = getRepository(MonitoringResult)
-      this.endpointRepository = getRepository(MonitoredEndpoint)
       const {
         user: {
           id: userId = undefined
@@ -67,11 +65,11 @@ export class MonitoringResultController extends ControllerClass {
   }
 
   private checkEndpoint (userId: number, id: number): Promise<MonitoredEndpoint| undefined> {
-    return this.endpointRepository.findOne({ where: { user: userId, id } })
+    return this.monitoredEndpointService.repository.findOne({ where: { user: userId, id } })
   }
 
   private async getResults (monitoredEndPointId: number, take: number): Promise<MonitoringResult[]> {
-    return this.monitoringResultRepository.find({
+    return this.service.repository.find({
       take,
       where: {
         monitoredEndPoint: monitoredEndPointId

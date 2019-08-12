@@ -4,14 +4,17 @@ import { Response, Next } from 'restify'
 import { RequestUser, IUpdateKey } from '../types'
 import { workers } from '../workers'
 import { ControllerClass } from './ControllerClass'
+import { monitoredEndpointService } from '../services'
+import { MonitoredEndpointService } from '../services/MonitoredEndpointService'
 
 export class MonitoredEndPointController extends ControllerClass {
   workersRepository = workers
 
+  service: MonitoredEndpointService = monitoredEndpointService
+
   public saveEndpoint = async (req: RequestUser, res: Response) => {
     try {
       const monitoredEndpoint = this.parseMonitoredEndpoint(req, new MonitoredEndpoint())
-      console.log('monitoredEndpoint', monitoredEndpoint)
       res.header('Content-Type', 'application/json')
 
       const errors = await validate(monitoredEndpoint)
@@ -21,7 +24,7 @@ export class MonitoredEndPointController extends ControllerClass {
         return res.send(errors)
       }
 
-      this.handleResponseSaveEndpoint(res, await this.workersRepository.saveMonitoredEndpoint(monitoredEndpoint), 'addEndpointCycle')
+      this.handleResponseSaveEndpoint(res, await this.service.saveMonitoredEndpoint(monitoredEndpoint), 'addEndpointCycle')
     } catch (error) {
       this.handleServerError(error, res)
     }
@@ -32,14 +35,14 @@ export class MonitoredEndPointController extends ControllerClass {
       res.header('Content-Type', 'application/json')
       const id = this.getId(req, res)
       if (!id) {
-        return
+        return this.handleResponseInvalidId(res)
       }
       const userId = req.user.id
       const monitoredEndpoint = await this.findMonitoredEndpoint(id, userId)
       if (!monitoredEndpoint) {
         res.status(400)
 
-        return res.send({ message: 'Endpoint non existant' })
+        return res.send({ message: 'Endpoint does not exist' })
       }
       const updatedMonitoredEndpoint = this.parseMonitoredEndpoint(req, monitoredEndpoint)
       const errors = await validate(updatedMonitoredEndpoint)
@@ -48,8 +51,8 @@ export class MonitoredEndPointController extends ControllerClass {
 
         return res.send(errors)
       }
-
-      this.handleResponseSaveEndpoint(res, await this.workersRepository.saveMonitoredEndpoint(updatedMonitoredEndpoint), 'updateEndpointCycle')
+      const savedMonitoredEndpoint = await this.service.saveMonitoredEndpoint(updatedMonitoredEndpoint)
+      this.handleResponseSaveEndpoint(res, savedMonitoredEndpoint, 'updateEndpointCycle')
     } catch (error) {
       this.handleServerError(error, res)
     }
@@ -61,7 +64,7 @@ export class MonitoredEndPointController extends ControllerClass {
       const userId = req.user.id
       const id = this.getId(req, res)
       if (!id) {
-        return
+        return this.handleResponseInvalidId(res)
       }
       const monitoredEndpoint = await this.findMonitoredEndpoint(id, userId)
 
@@ -71,10 +74,11 @@ export class MonitoredEndPointController extends ControllerClass {
         return
       }
 
-      const deleteResult = await this.workersRepository.monitoredEndpointRepository.delete(id)
+      const deleteResult = await this.service.repository.delete(id)
       res.status(200)
       res.send({ message: 'Affected Rows: ' + deleteResult.raw.affectedRows })
-      this.workersRepository.removeEndpointCycle(monitoredEndpoint)
+
+      return this.workersRepository.removeEndpointCycle(monitoredEndpoint)
     } catch (error) {
       this.handleServerError(error, res)
     }
@@ -83,7 +87,7 @@ export class MonitoredEndPointController extends ControllerClass {
   public showEndpoints = async (req: RequestUser, res: Response, next: Next) => {
     try {
       const userId = req.user.id
-      const monitoredEndpoints = await this.workersRepository.monitoredEndpointRepository.find({
+      const monitoredEndpoints = await this.service.repository.find({
         where: {
           user: userId
         }
@@ -96,7 +100,7 @@ export class MonitoredEndPointController extends ControllerClass {
   }
 
   private findMonitoredEndpoint = async (id:number, userId:number) => {
-    const monitoredEndpoint = await this.workersRepository.monitoredEndpointRepository.findOne({
+    const monitoredEndpoint = await this.service.repository.findOne({
       where: {
         user: userId,
         id: id
@@ -154,7 +158,7 @@ export class MonitoredEndPointController extends ControllerClass {
       return id
     }
 
-    return this.handleResponseInvalidId(res)
+    return false
   }
 
   private handleResponseInvalidId = (res: Response):false => {

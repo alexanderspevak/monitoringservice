@@ -15,5 +15,5 @@ export class MonitoringResult {
     payload: string;
 
     @ManyToOne(type => MonitoredEndpoint, monitoredEndPoint => monitoredEndPoint.monitoringResult, { nullable: false, onDelete: 'CASCADE' })
-    monitoredEndPoint:MonitoredEndpoint
+    monitoredEndPoint: MonitoredEndpoint
 }

@@ -1,5 +1,5 @@
-import { monitoringResultController } from './monitoringResult'
-import { monitoredEndpointController } from './monitoredEndPoint'
+import { monitoringResultController } from './MonitoringResult'
+import { monitoredEndpointController } from './MonitoredEndPoint'
 import { loginMiddleWare } from './loginMiddleWare'
 
 export {
