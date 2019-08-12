@@ -1,5 +1,6 @@
 import * as util from 'util'
 import * as zlib from 'zlib'
+import * as config from 'config'
 import { MonitoredEndpoint, MonitoringResult } from '../entity'
 import { Response } from 'restify'
 import { RequestUser } from '../types'
@@ -61,7 +62,7 @@ export class MonitoringResultController extends ControllerClass {
       return parseInt(limit)
     }
 
-    return 10
+    return config.get('MonitoredEndpoint.responseLimit')
   }
 
   private checkEndpoint (userId: number, id: number): Promise<MonitoredEndpoint| undefined> {
