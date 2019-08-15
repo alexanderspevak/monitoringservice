@@ -4,14 +4,9 @@
    "description": "",
    "main": "index.js",
    "scripts": {
-      "pretest": "tsc",
-      "test": "nyc mocha",
-      "watch": "mocha-typescript-watch",
-      "start": "ts-node src/index.ts",
-      "prepare": "tsc",
-      "eslint": "eslint --ext '.js,.jsx,.ts,.tsx' .",
-      "typescript": "tsc --project ./tsconfig.json --noEmit",
-      "check": "npm run eslint && npm run typescript"
+      "test": "jest",
+      "build": "node node_modules/typescript/lib/tsc",
+      "watch": "node node_modules/typescript/lib/tsc -w"
    },
    "author": "",
    "license": "ISC",
@@ -19,7 +14,6 @@
       "*.{js,ts}": "eslint"
    },
    "dependencies": {
-      "@types/config": "0.0.34",
       "axios": "^0.18.0",
       "class-validator": "^0.9.1",
       "config": "^3.2.2",
@@ -36,7 +30,13 @@
       "valid-url": "^1.0.9"
    },
    "devDependencies": {
+      "@types/config": "0.0.34",
+      "@types/jest": "^23.3.14",
       "@types/node": "^8.0.29",
+      "jest": "^23.6.0",
+      "jest-each": "^24.5.0",
+      "jest-when": "^2.2.0",
+      "ts-jest": "^24.0.2",
       "@types/restify": "^7.2.7",
       "@types/valid-url": "^1.0.2",
       "@typescript-eslint/eslint-plugin": "^1.13.0",
