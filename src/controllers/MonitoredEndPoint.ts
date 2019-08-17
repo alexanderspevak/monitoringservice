@@ -4,19 +4,14 @@ import { Response, Next } from 'restify'
 import { RequestUser, IUpdateKey } from '../types'
 import { workers } from '../workers'
 import { ControllerClass } from './ControllerClass'
-import { monitoredEndpointService } from '../services'
-import { MonitoredEndpointService } from '../services/MonitoredEndpointService'
+import { monitoredEndpointService, MonitoredEndpointService } from '../services'
 
-export class MonitoredEndPointController extends ControllerClass {
+export class MonitoredEndPointController extends ControllerClass<MonitoredEndpointService> {
   workersRepository = workers
-
-  service: MonitoredEndpointService = monitoredEndpointService
 
   public saveEndpoint = async (req: RequestUser, res: Response) => {
     try {
       const monitoredEndpoint = this.parseMonitoredEndpoint(req, new MonitoredEndpoint())
-      res.header('Content-Type', 'application/json')
-
       const errors = await validate(monitoredEndpoint)
       if (errors.length > 0) {
         res.status(400)
@@ -32,27 +27,15 @@ export class MonitoredEndPointController extends ControllerClass {
 
   public updateEndpoint = async (req: RequestUser, res: Response) => {
     try {
-      res.header('Content-Type', 'application/json')
-      const id = this.getId(req, res)
+      const id = this.getId(req)
       if (!id) {
         return this.handleResponseInvalidId(res)
       }
+
       const userId = req.user.id
       const monitoredEndpoint = await this.findMonitoredEndpoint(id, userId)
-      if (!monitoredEndpoint) {
-        res.status(400)
 
-        return res.send({ message: 'Endpoint does not exist' })
-      }
-      const updatedMonitoredEndpoint = this.parseMonitoredEndpoint(req, monitoredEndpoint)
-      const errors = await validate(updatedMonitoredEndpoint)
-      if (errors.length > 0) {
-        res.status(400)
-
-        return res.send(errors)
-      }
-      const savedMonitoredEndpoint = await this.service.saveMonitoredEndpoint(updatedMonitoredEndpoint)
-      this.handleResponseSaveEndpoint(res, savedMonitoredEndpoint, 'updateEndpointCycle')
+      return monitoredEndpoint ? this.handleUpdateEndpoint(req, res, monitoredEndpoint) : this.handleNotFoundMonitoredEndpoint(res)
     } catch (error) {
       this.handleServerError(error, res)
     }
@@ -60,25 +43,15 @@ export class MonitoredEndPointController extends ControllerClass {
 
   public deleteEndpoint = async (req: RequestUser, res: Response) => {
     try {
-      res.header('Content-Type', 'application/json')
       const userId = req.user.id
-      const id = this.getId(req, res)
+      const id = this.getId(req)
       if (!id) {
         return this.handleResponseInvalidId(res)
       }
+
       const monitoredEndpoint = await this.findMonitoredEndpoint(id, userId)
 
-      if (!monitoredEndpoint) {
-        this.handleNotFoundMonitoredEndpoint(res)
-
-        return
-      }
-
-      const deleteResult = await this.service.repository.delete(id)
-      res.status(200)
-      res.send({ message: 'Affected Rows: ' + deleteResult.raw.affectedRows })
-
-      return this.workersRepository.removeEndpointCycle(monitoredEndpoint)
+      return monitoredEndpoint ? await this.handleDeleteEndpoint(res, id, monitoredEndpoint) : this.handleNotFoundMonitoredEndpoint(res)
     } catch (error) {
       this.handleServerError(error, res)
     }
@@ -92,26 +65,40 @@ export class MonitoredEndPointController extends ControllerClass {
           user: userId
         }
       })
-      res.header('Content-Type', 'application/json')
+
       res.send(monitoredEndpoints)
     } catch (error) {
       this.handleServerError(error, res)
     }
   }
 
+  private handleUpdateEndpoint = async (req: RequestUser, res: Response, monitoredEndpoint: MonitoredEndpoint) => {
+    const updatedMonitoredEndpoint = this.parseMonitoredEndpoint(req, monitoredEndpoint)
+    const errors = await validate(updatedMonitoredEndpoint)
+    if (errors.length > 0) {
+      res.status(400)
+
+      return res.send(errors)
+    }
+    const savedMonitoredEndpoint = await this.service.saveMonitoredEndpoint(updatedMonitoredEndpoint)
+    this.handleResponseSaveEndpoint(res, savedMonitoredEndpoint, 'updateEndpointCycle')
+  }
+
   private findMonitoredEndpoint = async (id:number, userId:number) => {
-    const monitoredEndpoint = await this.service.repository.findOne({
+    return await this.service.repository.findOne({
       where: {
         user: userId,
         id: id
       }
-    })
+    }) || false
+  }
 
-    if (!monitoredEndpoint) {
-      return false
-    }
+  private handleDeleteEndpoint = async (res: Response, id: number, monitoredEndpoint : MonitoredEndpoint) => {
+    const deleteResult = await this.service.repository.delete(id)
+    res.status(200)
+    res.send({ message: 'Affected Rows: ' + deleteResult.raw.affectedRows })
 
-    return monitoredEndpoint
+    return this.workersRepository.removeEndpointCycle(monitoredEndpoint)
   }
 
   private handleNotFoundMonitoredEndpoint = (res: Response) => {
@@ -152,13 +139,10 @@ export class MonitoredEndPointController extends ControllerClass {
     return res.send({ message: 'error saving monitoredEndpoint' })
   }
 
-  private getId = (req: RequestUser, res: Response):number|false => {
+  private getId = (req: RequestUser): number|false => {
     const id = parseInt(req.body.id)
-    if (id && typeof (id) === 'number') {
-      return id
-    }
 
-    return false
+    return id && typeof (id) === 'number' ? id : false
   }
 
   private handleResponseInvalidId = (res: Response):false => {
@@ -169,4 +153,4 @@ export class MonitoredEndPointController extends ControllerClass {
   }
 }
 
-export const monitoredEndpointController = new MonitoredEndPointController()
+export const monitoredEndpointController = new MonitoredEndPointController(monitoredEndpointService)

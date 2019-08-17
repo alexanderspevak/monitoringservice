@@ -5,13 +5,23 @@ import { MonitoredEndpoint, MonitoringResult } from '../entity'
 import { Response } from 'restify'
 import { RequestUser } from '../types'
 import { ControllerClass } from './ControllerClass'
-import { monitoredEndpointService, monitoringResultService } from '../services'
+import {
+  monitoredEndpointService,
+  MonitoredEndpointService,
+  monitoringResultService,
+  MonitoringResultService
+} from '../services'
 const unzip = util.promisify(zlib.unzip)
 
-export class MonitoringResultController extends ControllerClass {
-  service = monitoringResultService
+export class MonitoringResultController extends ControllerClass <MonitoringResultService> {
+  service: MonitoringResultService
 
-  monitoredEndpointService = monitoredEndpointService
+  monitoredEndpointService: MonitoredEndpointService
+
+  constructor (service: MonitoringResultService, monitoredEndpointService: MonitoredEndpointService) {
+    super(service)
+    this.monitoredEndpointService = monitoredEndpointService
+  }
 
   public getMonitoredResults = async (req: RequestUser, res: Response) => {
     try {
@@ -34,19 +44,24 @@ export class MonitoringResultController extends ControllerClass {
         if (!await this.checkEndpoint(userId, endpointId)) {
           res.status(400)
 
-          return res.send('No endpoint with id: ' + endpointId + ' under logged in user')
+          return res.send(`No endpoint with id: ${endpointId} under logged in user`)
         }
         const monitoringResults = await this.parseResults(await this.getResults(endpointId, limit))
-        res.header('Content-Type', 'application/json')
         res.status(200)
 
         return res.send(monitoringResults)
       }
       res.status(400)
-      res.send('EndPoint {id} needed in query parameter')
+      res.send({ message: 'EndPoint {id} needed in query parameter' })
     } catch (error) {
       this.handleServerError(error, res)
     }
+  }
+
+  public handleNotFoundEndpoint = async (res: Response, endpointId: number, userId: number) => {
+    res.status(400)
+
+    return res.send({ message: `No endpoint with id: ${endpointId} under logged in user` })
   }
 
   private parseEndpointId (endpointId: unknown): number | false {
@@ -93,4 +108,4 @@ export class MonitoringResultController extends ControllerClass {
   }
 }
 
-export const monitoringResultController = new MonitoringResultController()
+export const monitoringResultController = new MonitoringResultController(monitoringResultService, monitoredEndpointService)

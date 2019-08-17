@@ -5,11 +5,11 @@ import { RequestUser } from '../types'
 
 export const loginMiddleWare = async (req: RequestUser, res: Response, next: Next) => {
   const userRepository = getRepository(User)
-  res.header('Content-Type', 'text/html')
   const headers = req.headers
   if (!headers.accesstoken) {
     res.status(401)
-    return res.send('Login to continue')
+
+    return res.send({ message: 'Login to continue' })
   }
   const accessToken: any = headers.accesstoken
   const user = await userRepository.findOne({
@@ -17,7 +17,8 @@ export const loginMiddleWare = async (req: RequestUser, res: Response, next: Nex
   })
   if (!user) {
     res.status(401)
-    return res.send('Invalid Token, Login to continue')
+
+    return res.send({ message: 'Invalid Token, Login to continue' })
   }
   req.user = user
   next()

@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import * as restify from 'restify'
 import { ISeedUser } from './types'
-import { userRouter, monitoredEndPointRouter, monitoringResultRouter } from './routes'
+import { router } from './routes'
 import { User } from './entity'
 import { Seeder } from './seeds/Seeder'
 
@@ -18,9 +18,7 @@ export class Server {
 
     server.listen(8080, () => {
       console.log('%s listening at %s', server.name, server.url)
-      userRouter.applyRoutes(server)
-      monitoredEndPointRouter.applyRoutes(server)
-      monitoringResultRouter.applyRoutes(server)
+      router.applyRoutes(server)
       server.get(
         '/',
         (req: restify.Request, res: restify.Response): void => {
