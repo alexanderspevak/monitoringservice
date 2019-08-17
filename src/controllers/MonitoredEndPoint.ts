@@ -107,11 +107,8 @@ export class MonitoredEndPointController extends ControllerClass<MonitoredEndpoi
     return false
   }
 
-  private parseMonitoredEndpoint = (req: RequestUser, monitoredEndpoint: MonitoredEndpoint) => {
+  public parseMonitoredEndpoint = (req: RequestUser, monitoredEndpoint: MonitoredEndpoint) => {
     const {
-      user: {
-        id: userId
-      },
       body: {
         name,
         url,
@@ -119,7 +116,6 @@ export class MonitoredEndPointController extends ControllerClass<MonitoredEndpoi
       }
     } = req
 
-    monitoredEndpoint.user = userId || monitoredEndpoint.user
     monitoredEndpoint.name = name || monitoredEndpoint.name
     monitoredEndpoint.url = url || monitoredEndpoint.url
     monitoredEndpoint.monitoredInterval = monitoredInterval ? parseInt(monitoredInterval) : monitoredEndpoint.monitoredInterval
@@ -139,7 +135,7 @@ export class MonitoredEndPointController extends ControllerClass<MonitoredEndpoi
     return res.send({ message: 'error saving monitoredEndpoint' })
   }
 
-  private getId = (req: RequestUser): number|false => {
+  public getId = (req: RequestUser): number|false => {
     const id = parseInt(req.body.id)
 
     return id && typeof (id) === 'number' ? id : false

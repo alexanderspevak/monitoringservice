@@ -93,7 +93,7 @@ var MonitoredEndPointController = /** @class */ (function (_super) {
                 }
             });
         }); };
-        _this.showEndpoints = function (req, res, next) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+        _this.showEndpoints = function (req, res) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
             var userId, monitoredEndpoints, error_4;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
@@ -170,8 +170,7 @@ var MonitoredEndPointController = /** @class */ (function (_super) {
             return false;
         };
         _this.parseMonitoredEndpoint = function (req, monitoredEndpoint) {
-            var userId = req.user.id, _a = req.body, name = _a.name, url = _a.url, monitoredInterval = _a.monitoredInterval;
-            monitoredEndpoint.user = userId || monitoredEndpoint.user;
+            var _a = req.body, name = _a.name, url = _a.url, monitoredInterval = _a.monitoredInterval;
             monitoredEndpoint.name = name || monitoredEndpoint.name;
             monitoredEndpoint.url = url || monitoredEndpoint.url;
             monitoredEndpoint.monitoredInterval = monitoredInterval ? parseInt(monitoredInterval) : monitoredEndpoint.monitoredInterval;

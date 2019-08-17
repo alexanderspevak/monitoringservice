@@ -12,44 +12,49 @@ var MonitoringResultController = /** @class */ (function (_super) {
     function MonitoringResultController(service, monitoredEndpointService) {
         var _this = _super.call(this, service) || this;
         _this.getMonitoredResults = function (req, res) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            var _a, _b, userId, _c, _d, id, uncheckedLimit, endpointId, limit, monitoringResults, _e, error_1;
-            return tslib_1.__generator(this, function (_f) {
-                switch (_f.label) {
+            var _a, _b, userId, _c, _d, id, uncheckedLimit, endpointId, limit, error_1;
+            return tslib_1.__generator(this, function (_e) {
+                switch (_e.label) {
                     case 0:
-                        _f.trys.push([0, 5, , 6]);
+                        _e.trys.push([0, 3, , 4]);
                         _a = req.user, _b = (_a === void 0 ? {} : _a).id, userId = _b === void 0 ? undefined : _b, _c = req.query, _d = _c === void 0 ? {
                             id: undefined,
                             limit: undefined
                         } : _c, id = _d.id, uncheckedLimit = _d.limit;
                         endpointId = this.parseEndpointId(id);
                         limit = this.parseResponseLimit(uncheckedLimit);
-                        if (!(endpointId && userId)) return [3 /*break*/, 4];
+                        if (!(endpointId && userId)) return [3 /*break*/, 2];
                         return [4 /*yield*/, this.checkEndpoint(userId, endpointId)];
-                    case 1:
-                        if (!(_f.sent())) {
-                            res.status(400);
-                            return [2 /*return*/, res.send("No endpoint with id: " + endpointId + " under logged in user")];
-                        }
-                        _e = this.parseResults;
-                        return [4 /*yield*/, this.getResults(endpointId, limit)];
-                    case 2: return [4 /*yield*/, _e.apply(this, [_f.sent()])];
-                    case 3:
-                        monitoringResults = _f.sent();
-                        res.status(200);
-                        return [2 /*return*/, res.send(monitoringResults)];
-                    case 4:
+                    case 1: return [2 /*return*/, (_e.sent())
+                            ? this.handleResponseMonitoringResults(res, endpointId, limit)
+                            : this.handleNotFoundEndpoint(res, endpointId)];
+                    case 2:
                         res.status(400);
-                        res.send({ message: 'EndPoint {id} needed in query parameter' });
-                        return [3 /*break*/, 6];
-                    case 5:
-                        error_1 = _f.sent();
+                        res.send({ message: 'Missing endpoint id' });
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_1 = _e.sent();
                         this.handleServerError(error_1, res);
-                        return [3 /*break*/, 6];
-                    case 6: return [2 /*return*/];
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         }); };
-        _this.handleNotFoundEndpoint = function (res, endpointId, userId) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+        _this.handleResponseMonitoringResults = function (res, endpointId, limit) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var monitoringResults, _a;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = this.parseResults;
+                        return [4 /*yield*/, this.getResults(endpointId, limit)];
+                    case 1:
+                        monitoringResults = _a.apply(this, [_b.sent()]);
+                        res.status(200);
+                        return [2 /*return*/, res.send(monitoringResults)];
+                }
+            });
+        }); };
+        _this.handleNotFoundEndpoint = function (res, endpointId) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
             return tslib_1.__generator(this, function (_a) {
                 res.status(400);
                 return [2 /*return*/, res.send({ message: "No endpoint with id: " + endpointId + " under logged in user" })];

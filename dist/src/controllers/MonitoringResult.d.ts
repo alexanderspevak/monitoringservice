@@ -7,7 +7,8 @@ export declare class MonitoringResultController extends ControllerClass<Monitori
     monitoredEndpointService: MonitoredEndpointService;
     constructor(service: MonitoringResultService, monitoredEndpointService: MonitoredEndpointService);
     getMonitoredResults: (req: RequestUser, res: Response) => Promise<any>;
-    handleNotFoundEndpoint: (res: Response, endpointId: number, userId: number) => Promise<any>;
+    private handleResponseMonitoringResults;
+    private handleNotFoundEndpoint;
     private parseEndpointId;
     private parseResponseLimit;
     private checkEndpoint;

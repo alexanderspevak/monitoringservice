@@ -1,4 +1,5 @@
-import { Response, Next } from 'restify';
+import { MonitoredEndpoint } from '../entity';
+import { Response } from 'restify';
 import { RequestUser } from '../types';
 import { ControllerClass } from './ControllerClass';
 import { MonitoredEndpointService } from '../services';
@@ -7,14 +8,14 @@ export declare class MonitoredEndPointController extends ControllerClass<Monitor
     saveEndpoint: (req: RequestUser, res: Response) => Promise<any>;
     updateEndpoint: (req: RequestUser, res: Response) => Promise<any>;
     deleteEndpoint: (req: RequestUser, res: Response) => Promise<boolean | void>;
-    showEndpoints: (req: RequestUser, res: Response, next: Next) => Promise<void>;
+    showEndpoints: (req: RequestUser, res: Response) => Promise<void>;
     private handleUpdateEndpoint;
     private findMonitoredEndpoint;
     private handleDeleteEndpoint;
     private handleNotFoundMonitoredEndpoint;
-    private parseMonitoredEndpoint;
+    parseMonitoredEndpoint: (req: RequestUser, monitoredEndpoint: MonitoredEndpoint) => MonitoredEndpoint;
     private handleResponseSaveEndpoint;
-    private getId;
+    getId: (req: RequestUser) => number | false;
     private handleResponseInvalidId;
 }
 export declare const monitoredEndpointController: MonitoredEndPointController;
