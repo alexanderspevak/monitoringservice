@@ -2,21 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b46f766e-ee41-4c31-aa80-0eb0645fd799" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/test/src/controllers.test.ts/MonitoredEndpoint.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/src/controllers/MonitoredEndPoint.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/dist/src/controllers/MonitoredEndPoint.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/src/controllers/MonitoredEndPoint.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/src/controllers/MonitoredEndPoint.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/src/controllers/MonitoredEndPoint.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/dist/src/controllers/MonitoredEndPoint.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/src/controllers/MonitoringResult.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/dist/src/controllers/MonitoringResult.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/src/controllers/MonitoringResult.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/src/controllers/MonitoringResult.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/src/controllers/MonitoringResult.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/dist/src/controllers/MonitoringResult.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/src/test/tests.test.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/dist/src/test/tests.test.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/src/test/tests.test.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/src/test/tests.test.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/src/test/tests.test.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/dist/src/test/tests.test.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/MonitoredEndPoint.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/MonitoredEndPoint.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/request.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/tests.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/tests.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -76,8 +62,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/.gitignore">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="34">
-              <caret line="2" column="6" selection-start-line="2" selection-start-column="6" selection-end-line="2" selection-end-column="6" />
+            <state relative-caret-position="51">
+              <caret line="3" selection-start-line="3" selection-end-line="3" />
             </state>
           </provider>
         </entry>
@@ -212,11 +198,11 @@
         <option value="$PROJECT_DIR$/src/routes/index.ts" />
         <option value="$PROJECT_DIR$/src/controllers/loginMiddleWare.ts" />
         <option value="$PROJECT_DIR$/src/controllers/MonitoringResult.ts" />
-        <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/src/test/tests.test.ts" />
         <option value="$PROJECT_DIR$/src/controllers/MonitoredEndPoint.ts" />
         <option value="$PROJECT_DIR$/package.json" />
         <option value="$PROJECT_DIR$/src/test/src/controllers.test.ts/MonitoredEndpoint.test.ts" />
+        <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
   </component>
@@ -336,12 +322,12 @@
       <workItem from="1565945829293" duration="5769000" />
       <workItem from="1565961827775" duration="96000" />
       <workItem from="1565963891548" duration="11140000" />
-      <workItem from="1566030561434" duration="16749000" />
+      <workItem from="1566030561434" duration="16900000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="144263000" />
+    <option name="totallyTimeSpent" value="144414000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="67" y="25" width="1853" height="1055" extended-state="6" />
@@ -773,8 +759,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="34">
-          <caret line="2" column="6" selection-start-line="2" selection-start-column="6" selection-end-line="2" selection-end-column="6" />
+        <state relative-caret-position="51">
+          <caret line="3" selection-start-line="3" selection-end-line="3" />
         </state>
       </provider>
     </entry>
