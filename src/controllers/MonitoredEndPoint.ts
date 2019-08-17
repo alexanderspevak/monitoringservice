@@ -1,6 +1,6 @@
 import { MonitoredEndpoint } from '../entity'
 import { validate } from 'class-validator'
-import { Response, Next } from 'restify'
+import { Response } from 'restify'
 import { RequestUser, IUpdateKey } from '../types'
 import { workers } from '../workers'
 import { ControllerClass } from './ControllerClass'
@@ -57,7 +57,7 @@ export class MonitoredEndPointController extends ControllerClass<MonitoredEndpoi
     }
   }
 
-  public showEndpoints = async (req: RequestUser, res: Response, next: Next) => {
+  public showEndpoints = async (req: RequestUser, res: Response) => {
     try {
       const userId = req.user.id
       const monitoredEndpoints = await this.service.repository.find({

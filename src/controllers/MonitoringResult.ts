@@ -41,24 +41,25 @@ export class MonitoringResultController extends ControllerClass <MonitoringResul
       const endpointId = this.parseEndpointId(id)
       const limit = this.parseResponseLimit(uncheckedLimit)
       if (endpointId && userId) {
-        if (!await this.checkEndpoint(userId, endpointId)) {
-          res.status(400)
-
-          return res.send(`No endpoint with id: ${endpointId} under logged in user`)
-        }
-        const monitoringResults = await this.parseResults(await this.getResults(endpointId, limit))
-        res.status(200)
-
-        return res.send(monitoringResults)
+        return await this.checkEndpoint(userId, endpointId)
+          ? this.handleResponseMonitoringResults(res, endpointId, limit)
+          : this.handleNotFoundEndpoint(res, endpointId)
       }
       res.status(400)
-      res.send({ message: 'EndPoint {id} needed in query parameter' })
+      res.send({ message: 'Missing endpoint id' })
     } catch (error) {
       this.handleServerError(error, res)
     }
   }
 
-  public handleNotFoundEndpoint = async (res: Response, endpointId: number, userId: number) => {
+  private handleResponseMonitoringResults = async (res:Response, endpointId: number, limit: number) => {
+    const monitoringResults = this.parseResults(await this.getResults(endpointId, limit))
+    res.status(200)
+
+    return res.send(monitoringResults)
+  }
+
+  private handleNotFoundEndpoint = async (res: Response, endpointId: number) => {
     res.status(400)
 
     return res.send({ message: `No endpoint with id: ${endpointId} under logged in user` })
