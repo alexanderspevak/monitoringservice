@@ -1,18 +1,18 @@
 FROM node:11.4.0
 
-RUN mkdir /app
+RUN mkdir /monitoringservice
 
-WORKDIR /app
+WORKDIR /monitoringservice
 
-COPY ./package.json /app/package.json
-COPY ./package-lock.json /app/package-lock.json
-COPY ./tsconfig.json /app/tsconfig.json
-COPY ./ormconfig.json /app/ormconfig.json
-
+COPY ./package.json /monitoringservice/package.json
+COPY ./package-lock.json /monitoringservice/package-lock.json
+COPY ./tsconfig.json /monitoringservice/tsconfig.json
+COPY ./ormconfig.json /monitoringservice/ormconfig.json
+COPY ./src  /monitoringservice/src
 RUN npm install --silent
 
-COPY ./src  /app/src
-EXPOSE 3306
+COPY ./src  /monitoringservice/src
 EXPOSE 8080
+
 
 CMD ["npm", "run", "start"]
