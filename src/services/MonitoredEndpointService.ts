@@ -2,9 +2,9 @@ import { MonitoredEndpoint } from '../entity'
 import { Service } from './Service'
 
 export class MonitoredEndpointService extends Service {
-  public async saveMonitoredEndpoint (monitoredEndpoint: MonitoredEndpoint) {
+  public async save (monitoredEndpoint: MonitoredEndpoint) {
     monitoredEndpoint.dateOfLastCheck = new Date()
-    await this.repository.save(monitoredEndpoint)
+    this.repository.save(monitoredEndpoint)
 
     return monitoredEndpoint
   }

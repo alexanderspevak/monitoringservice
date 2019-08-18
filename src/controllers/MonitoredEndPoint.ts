@@ -19,7 +19,7 @@ export class MonitoredEndPointController extends ControllerClass<MonitoredEndpoi
         return res.send(errors)
       }
 
-      this.handleResponseSaveEndpoint(res, await this.service.saveMonitoredEndpoint(monitoredEndpoint), 'addEndpointCycle')
+      this.handleResponseSaveEndpoint(res, await this.service.save(monitoredEndpoint), 'addEndpointCycle')
     } catch (error) {
       this.handleServerError(error, res)
     }
@@ -60,10 +60,8 @@ export class MonitoredEndPointController extends ControllerClass<MonitoredEndpoi
   public showEndpoints = async (req: RequestUser, res: Response) => {
     try {
       const userId = req.user.id
-      const monitoredEndpoints = await this.service.repository.find({
-        where: {
-          user: userId
-        }
+      const monitoredEndpoints = await this.service.find({
+        user: userId
       })
 
       res.send(monitoredEndpoints)
@@ -80,21 +78,19 @@ export class MonitoredEndPointController extends ControllerClass<MonitoredEndpoi
 
       return res.send(errors)
     }
-    const savedMonitoredEndpoint = await this.service.saveMonitoredEndpoint(updatedMonitoredEndpoint)
+    const savedMonitoredEndpoint = await this.service.save(updatedMonitoredEndpoint)
     this.handleResponseSaveEndpoint(res, savedMonitoredEndpoint, 'updateEndpointCycle')
   }
 
   private findMonitoredEndpoint = async (id:number, userId:number) => {
-    return await this.service.repository.findOne({
-      where: {
-        user: userId,
-        id: id
-      }
+    return await this.service.findOne({
+      user: userId,
+      id
     }) || false
   }
 
   private handleDeleteEndpoint = async (res: Response, id: number, monitoredEndpoint : MonitoredEndpoint) => {
-    const deleteResult = await this.service.repository.delete(id)
+    const deleteResult = await this.service.delete(id)
     res.status(200)
     res.send({ message: 'Affected Rows: ' + deleteResult.raw.affectedRows })
 

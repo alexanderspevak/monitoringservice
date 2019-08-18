@@ -82,19 +82,11 @@ export class MonitoringResultController extends ControllerClass <MonitoringResul
   }
 
   private checkEndpoint (userId: number, id: number): Promise<MonitoredEndpoint| undefined> {
-    return this.monitoredEndpointService.repository.findOne({ where: { user: userId, id } })
+    return this.monitoredEndpointService.findOne({ user: userId, id })
   }
 
   private async getResults (monitoredEndPointId: number, take: number): Promise<MonitoringResult[]> {
-    return this.service.repository.find({
-      take,
-      where: {
-        monitoredEndPoint: monitoredEndPointId
-      },
-      order: {
-        dateOfCheck: 'DESC'
-      }
-    })
+    return this.service.findWithTake({ monitoredEndPoint: monitoredEndPointId }, take)
   }
 
   private async parseResults (monitoringResults: MonitoringResult[]) {

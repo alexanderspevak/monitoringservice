@@ -11,3 +11,7 @@ export interface Intervals {
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 export type ISeedUser = Omit<User, 'id'|'monitoredEndPoints'>
 export type IUpdateKey = 'addEndpointCycle'|'removeEndpointCycle'|'updateEndpointCycle'
+
+export interface IFindOptions {
+  [key: string]: string | number
+}

@@ -2,9 +2,8 @@
 
 1. Run `npm i` command
 2. Create new mysql database
-3. Setup database settings inside `ormconfig.json` file
+3. Update database settings inside `ormconfig.json` file
 4. Run `npm start` command
-5. For tests, in separate terminal run `npm test` after 4.
 
 ## Routes:
 
@@ -26,8 +25,3 @@ For requests to work correctly, headers have to have accesstoken key with user's
 
 Users are seeded at the beginning of the app. There are no routes for users
 
-## Background workers:
-At start, for all endpoints, setInterval is fired.This is restarted every hour. In beetwen, if there is new endpoint, or endpoint is changed , changes are reflected via eventEmitter. Every time monitoring result is being saved to database, monitoringendpoint is being displayed allong with status code.
-
-## Docker Files:
-I was unable to finish, as I have unsuficient knowledge on the subject. 
