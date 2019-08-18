@@ -28,7 +28,7 @@ describe('unit test monitoredEndointController', () => {
     url: 'www.ahoj.cz',
     monitoredInterval: 5
   }
-
+  jest.mock('typeorm')
   it('should return monitoredEndpointShape', () => {
     const monitoredEndpoint = monitoredEndpointController.parseMonitoredEndpoint(request as RequestUser, inputEndpoint as MonitoredEndpoint)
     expect(monitoredEndpoint).toEqual(responseEndpoint)
