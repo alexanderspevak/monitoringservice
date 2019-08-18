@@ -1,9 +1,9 @@
-import { getRepository, Repository } from 'typeorm'
+import { getRepository } from 'typeorm'
 
 export abstract class Service {
   private entity: any
 
-  public repository : Repository<any>
+  public repository : any
 
   constructor (entity: any) {
     this.entity = entity

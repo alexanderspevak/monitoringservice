@@ -4,15 +4,12 @@ RUN mkdir /monitoringservice
 
 WORKDIR /monitoringservice
 
-COPY ./package.json /monitoringservice/package.json
-COPY ./package-lock.json /monitoringservice/package-lock.json
-COPY ./tsconfig.json /monitoringservice/tsconfig.json
-COPY ./ormconfig.json /monitoringservice/ormconfig.json
-COPY ./src  /monitoringservice/src
-RUN npm install --silent
+COPY . .
 
-COPY ./src  /monitoringservice/src
+RUN npm install --silent
+RUN npm run build
+
 EXPOSE 8080
 
 
-CMD ["npm", "run", "start"]
+CMD ["node", "dist/src/index"]
