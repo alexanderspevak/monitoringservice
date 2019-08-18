@@ -35,7 +35,7 @@ export class MonitoredEndPointController extends ControllerClass<MonitoredEndpoi
       const userId = req.user.id
       const monitoredEndpoint = await this.findMonitoredEndpoint(id, userId)
 
-      return monitoredEndpoint ? this.handleUpdateEndpoint(req, res, monitoredEndpoint) : this.handleNotFoundMonitoredEndpoint(res)
+      return monitoredEndpoint ? await this.handleUpdateEndpoint(req, res, monitoredEndpoint) : this.handleNotFoundMonitoredEndpoint(res)
     } catch (error) {
       this.handleServerError(error, res)
     }
@@ -44,14 +44,14 @@ export class MonitoredEndPointController extends ControllerClass<MonitoredEndpoi
   public deleteEndpoint = async (req: RequestUser, res: Response) => {
     try {
       const userId = req.user.id
-      const id = this.getId(req)
+      const id = req.query.id
       if (!id) {
         return this.handleResponseInvalidId(res)
       }
 
       const monitoredEndpoint = await this.findMonitoredEndpoint(id, userId)
 
-      return monitoredEndpoint ? await this.handleDeleteEndpoint(res, id, monitoredEndpoint) : this.handleNotFoundMonitoredEndpoint(res)
+      return monitoredEndpoint ? await this.handleDeleteEndpoint(res, monitoredEndpoint) : this.handleNotFoundMonitoredEndpoint(res)
     } catch (error) {
       this.handleServerError(error, res)
     }
@@ -83,14 +83,15 @@ export class MonitoredEndPointController extends ControllerClass<MonitoredEndpoi
   }
 
   private findMonitoredEndpoint = async (id:number, userId:number) => {
+
     return await this.service.findOne({
       user: userId,
       id
     }) || false
   }
 
-  private handleDeleteEndpoint = async (res: Response, id: number, monitoredEndpoint : MonitoredEndpoint) => {
-    const deleteResult = await this.service.delete(id)
+  private handleDeleteEndpoint = async (res: Response, monitoredEndpoint : MonitoredEndpoint) => {
+    const deleteResult = await this.service.delete(monitoredEndpoint)
     res.status(200)
     res.send({ message: 'Affected Rows: ' + deleteResult.raw.affectedRows })
 
@@ -105,6 +106,9 @@ export class MonitoredEndPointController extends ControllerClass<MonitoredEndpoi
 
   public parseMonitoredEndpoint = (req: RequestUser, monitoredEndpoint: MonitoredEndpoint) => {
     const {
+      user: {
+        id: userId
+      },
       body: {
         name,
         url,
@@ -112,11 +116,16 @@ export class MonitoredEndPointController extends ControllerClass<MonitoredEndpoi
       }
     } = req
 
+    monitoredEndpoint.user = userId
     monitoredEndpoint.name = name || monitoredEndpoint.name
-    monitoredEndpoint.url = url || monitoredEndpoint.url
+    monitoredEndpoint.url = this.parseUrl(url) || monitoredEndpoint.url
     monitoredEndpoint.monitoredInterval = monitoredInterval ? parseInt(monitoredInterval) : monitoredEndpoint.monitoredInterval
 
     return monitoredEndpoint
+  }
+
+  private parseUrl (url: string) {
+    return url[url.length - 1] === '/' ? url.slice(0, -1) : url
   }
 
   private handleResponseSaveEndpoint (res: Response, monitoredEndpoint: MonitoredEndpoint | false, updateKey: IUpdateKey) {

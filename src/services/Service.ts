@@ -20,11 +20,11 @@ export abstract class Service {
     return entity
   }
 
-  public async delete (id: number) {
-    return this.repository.delete(id)
+  public async delete (entity:any) {
+    return this.repository.delete(entity.id)
   }
 
-  public find (options: IFindOptions) {
+  public find (options: IFindOptions = {}) {
     return this.repository.find({
       where: options
     })

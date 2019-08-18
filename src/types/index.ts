@@ -15,3 +15,8 @@ export type IUpdateKey = 'addEndpointCycle'|'removeEndpointCycle'|'updateEndpoin
 export interface IFindOptions {
   [key: string]: string | number
 }
+
+export interface IEndpointResponse {
+  data: string,
+  status: number
+}

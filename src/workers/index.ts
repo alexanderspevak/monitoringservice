@@ -2,21 +2,21 @@ import { promisify } from 'util'
 import axios from 'axios'
 import * as zlib from 'zlib'
 import * as url from 'url'
-import { Intervals } from '../types'
+import { IEndpointResponse, Intervals } from '../types'
 import { MonitoredEndpoint, MonitoringResult } from '../entity'
 import { monitoredEndpointService, monitoringResultService } from '../services'
 
 const deflate = promisify(zlib.deflate)
 
 export class Workers {
-  private intervals:Intervals = {}
+  private intervals: Intervals = {}
 
   monitoredEndpointService = monitoredEndpointService
 
   monitoringResultService = monitoringResultService
 
   async start () {
-    const monitoredEndpoints = await this.monitoredEndpointService.repository.find()
+    const monitoredEndpoints = await this.monitoredEndpointService.find()
     monitoredEndpoints.forEach((endpoint: any) => this.startEndpointCycle(endpoint))
   }
 
@@ -28,65 +28,59 @@ export class Workers {
     )
   }
 
-  private monitoredEndpointCallback = async (endpoint: MonitoredEndpoint) => {
-    try {
-      const endpointResponse = await axios.get(this.parseUrl(endpoint))
-      const monitoringResult = new MonitoringResult()
-      const payload: string = endpointResponse.data || 'no data provided'
-      const buffer = await deflate(payload)
-
-      if (Buffer.isBuffer(buffer)) {
-        monitoringResult.payload = buffer.toString('base64')
-      }
-
-      const httpCode = endpointResponse.status || 0
-      monitoringResult.httpCode = httpCode
-      monitoringResult.monitoredEndPoint = endpoint
-
-      await this.saveMonitoringResult(monitoringResult)
-      await this.saveMonitoredEndpoint(endpoint)
-    } catch (err) {
-      console.log('\x1b[31m', 'No response from endpoint', err)
-
-      const monitoringResult = new MonitoringResult()
-      monitoringResult.httpCode = 500
-      monitoringResult.payload = (Buffer.from('no response provided')).toString('base64')
-      monitoringResult.monitoredEndPoint = endpoint
-
-      await this.saveMonitoringResult(monitoringResult)
-      await this.saveMonitoredEndpoint(endpoint)
+  private monitoredEndpointCallback = async (monitoredEndpoint: MonitoredEndpoint) => {
+    const endpointResponse = await this.getResponse(monitoredEndpoint)
+    if (this.intervals[monitoredEndpoint.id]) {
+      await this.saveMonitoringResult(monitoredEndpoint, endpointResponse)
+      await this.saveMonitoredEndpoint(monitoredEndpoint)
     }
   }
 
-  private async saveMonitoringResult (monitoringResult: MonitoringResult) {
+  private getResponse = async (endpoint: MonitoredEndpoint) => {
     try {
-      if (!this.intervals[monitoringResult.monitoredEndPoint.id]) {
-        return false
+      return await axios.get(this.parseUrl(endpoint))
+    } catch (err) {
+      return {
+        data: 'httpmonitoring: No data provided',
+        status: 500
       }
+    }
+  }
 
-      await this.monitoringResultService.repository.save(monitoringResult)
+  private async saveMonitoringResult (monitoredEndpoint: MonitoredEndpoint, endpointResponse: IEndpointResponse) {
+    try {
+      const monitoringResult = await this.createMonitoringResult(monitoredEndpoint, endpointResponse)
+      await this.monitoringResultService.save(monitoringResult)
       console.log(`Monitoring result with endpointId: ${monitoringResult.monitoredEndPoint.id} saved with statusCode: `, monitoringResult.httpCode)
-
-      return true
     } catch (error) {
       console.log('\x1b[31m', 'Error saving monitoringResult:')
       console.log('\x1b[31m', 'Error:', error.message)
-      return false
     }
   }
 
   public async saveMonitoredEndpoint (monitoredEndpoint: MonitoredEndpoint) {
     try {
       monitoredEndpoint.dateOfLastCheck = new Date()
-      await this.monitoredEndpointService.saveMonitoredEndpoint(monitoredEndpoint)
-
-      return monitoredEndpoint
+      await this.monitoredEndpointService.save(monitoredEndpoint)
     } catch (error) {
       console.log('\x1b[31m', 'Error saving :' + monitoredEndpoint)
       console.log('\x1b[31m', 'Error:', error.message)
-
-      return false
     }
+  }
+
+  private createMonitoringResult = async (monitoredEndpoint: MonitoredEndpoint, endpointResponse: IEndpointResponse) => {
+    const monitoringResult = new MonitoringResult()
+    const payload: string = endpointResponse.data
+    const buffer = await deflate(payload)
+
+    if (Buffer.isBuffer(buffer)) {
+      monitoringResult.payload = buffer.toString('base64')
+    }
+
+    monitoringResult.httpCode = endpointResponse.status || 0
+    monitoringResult.monitoredEndPoint = monitoredEndpoint
+
+    return monitoringResult
   }
 
   private parseUrl (endPoint: MonitoredEndpoint): string {

@@ -7,7 +7,7 @@
       "test":  "npm run build && jest",
       "start": "npm run build && node dist/src/index",
       "build": "node node_modules/typescript/lib/tsc",
-      "watch": "node node_modules/typescript/lib/tsc -w",
+      "watch": "node node_modules/typescript/lib/tsc -w"
    },
    "author": "",
    "license": "ISC",
