@@ -83,7 +83,6 @@ export class MonitoredEndPointController extends ControllerClass<MonitoredEndpoi
   }
 
   private findMonitoredEndpoint = async (id:number, userId:number) => {
-
     return await this.service.findOne({
       user: userId,
       id
