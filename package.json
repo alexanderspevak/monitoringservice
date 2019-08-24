@@ -4,7 +4,7 @@
    "description": "",
    "main": "index.js",
    "scripts": {
-      "test":  "npm run build && jest",
+      "test": "npm run build && jest",
       "start": "npm run build && node dist/src/index",
       "build": "node node_modules/typescript/lib/tsc",
       "watch": "node node_modules/typescript/lib/tsc -w"
@@ -18,8 +18,6 @@
       "axios": "^0.18.0",
       "class-validator": "^0.9.1",
       "config": "^3.2.2",
-      "dotenv": "^6.2.0",
-      "faker": "^4.1.0",
       "mysql": "^2.14.1",
       "mysql2": "^1.6.4",
       "reflect-metadata": "^0.1.10",
@@ -48,10 +46,7 @@
       "eslint-plugin-node": "^9.1.0",
       "eslint-plugin-promise": "^4.2.1",
       "eslint-plugin-standard": "^4.0.0",
-      "mocha": "^5.2.0",
-      "mocha-typescript": "^1.1.17",
       "nyc": "^13.1.0",
-      "source-map-support": "^0.5.10",
       "ts-node": "3.3.0",
       "typescript": "^3.5.3"
    }
