@@ -17,7 +17,7 @@
       "*.{js,ts}": "eslint"
    },
    "dependencies": {
-      "axios": "^0.18.0",
+      "axios": "^0.21.1",
       "class-validator": "^0.9.1",
       "config": "^3.2.2",
       "mysql": "^2.14.1",
